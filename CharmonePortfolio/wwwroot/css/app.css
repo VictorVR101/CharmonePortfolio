@@ -1,15 +1,23 @@
+/* Reset */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    outline: none;
 }
 
+a:focus, button:focus {
+    outline: none;
+}
+
+/* Base */
 body {
     font-family: 'Georgia', serif;
     background-color: #E0D6B8;
     color: #2a2a2a;
 }
 
+/* Navbar */
 .navbar {
     background-color: #800000;
     padding: 1.2rem 3rem;
@@ -18,7 +26,7 @@ body {
     align-items: center;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1000; /* slightly higher for safety */
 }
 
 .navbar-brand a {
@@ -46,10 +54,12 @@ body {
             color: #B88A2C;
         }
 
+/* Layout */
 main {
     min-height: 100vh;
 }
 
+/* Hero Section */
 .hero {
     min-height: calc(100vh - 70px);
     display: flex;
@@ -58,7 +68,6 @@ main {
     align-items: center;
     text-align: center;
     padding: 2rem;
-    background-color: #E0D6B8;
 }
 
 .hero-tag {
@@ -121,3 +130,59 @@ main {
         background-color: #800000;
         color: #E0D6B8;
     }
+
+/* Mobile */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 1rem 1.5rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .navbar-brand a {
+        font-size: 1.1rem;
+    }
+
+    .navbar-links {
+        gap: 1.2rem;
+        flex-wrap: wrap;
+    }
+
+        .navbar-links a {
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+    .hero-title {
+        font-size: 3.5rem;
+        letter-spacing: -1px;
+    }
+
+    .hero-tag {
+        font-size: 0.65rem;
+        letter-spacing: 2px;
+        text-align: center;
+    }
+
+    .hero-sub {
+        font-size: 1rem;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+        padding: 0 2rem;
+    }
+
+    .btn-primary, .btn-outline {
+        text-align: center;
+        padding: 1rem;
+    }
+}
+
+/* 🔥 Blazor FIX (STRONGER + RELIABLE) */
+#app .loading-progress,
+#app .loading-progress-text,
+#blazor-error-ui {
+    display: none !important;
+}
