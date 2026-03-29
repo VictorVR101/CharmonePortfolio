@@ -2,10 +2,24 @@
     <div class="navbar-brand">
         <a href="/">Charmone Strauss</a>
     </div>
-    <div class="navbar-links">
-        <a href="/">Home</a>
-        <a href="/about">About</a>
-        <a href="/portfolio">Portfolio</a>
-        <a href="/contact">Contact</a>
+
+    <button class="hamburger" @onclick="ToggleMenu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <div class="navbar-links @(menuOpen ? "open" : "")">
+        <a href="/" @onclick="CloseMenu">Home</a>
+        <a href="/about" @onclick="CloseMenu">About</a>
+        <a href="/portfolio" @onclick="CloseMenu">Portfolio</a>
+        <a href="/contact" @onclick="CloseMenu">Contact</a>
     </div>
 </nav>
+
+@code {
+    private bool menuOpen = false;
+
+    private void ToggleMenu() => menuOpen = !menuOpen;
+    private void CloseMenu() => menuOpen = false;
+}

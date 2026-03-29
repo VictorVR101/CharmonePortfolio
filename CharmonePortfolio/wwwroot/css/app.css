@@ -255,6 +255,48 @@ main {
         text-align: center;
         padding: 1rem;
     }
+
+    .hamburger {
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+    }
+
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 2px;
+            background-color: #E0D6B8;
+            border-radius: 2px;
+        }
+
+    @media (max-width: 768px) {
+        .hamburger {
+            display: flex;
+        }
+
+        .navbar-links {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            gap: 0;
+            background-color: #800000;
+            padding: 0.5rem 0;
+        }
+
+            .navbar-links.open {
+                display: flex;
+            }
+
+            .navbar-links a {
+                padding: 0.8rem 1.5rem;
+                border-top: 1px solid rgba(224, 214, 184, 0.15);
+            }
+    }
 }
 
 
