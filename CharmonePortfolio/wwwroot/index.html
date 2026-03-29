@@ -28,6 +28,27 @@
         <span class="dismiss">🗙</span>
     </div>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        emailjs.init("YOUR_PUBLIC_KEY");
+
+        window.sendEmail = async function (name, email, subject, message) {
+            try {
+                await emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
+                    from_name: name,
+                    from_email: email,
+                    subject: subject,
+                    message: message,
+                    to_email: "YOUR_EMAIL@gmail.com"
+                });
+                return true;
+            } catch (e) {
+                console.error(e);
+                return false;
+            }
+        }
+    </script>
 </body>
 
 </html>
