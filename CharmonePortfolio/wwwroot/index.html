@@ -24,6 +24,7 @@
     <script type="importmap"></script>
 
     <!-- GitHub Pages SPA redirect fix — handles page refresh on sub-routes -->
+    <!-- GitHub Pages SPA redirect fix -->
     <script>
         (function (l) {
             if (l.search[1] === '/') {
@@ -31,7 +32,7 @@
                     return s.replace(/~and~/g, '&')
                 }).join('?');
                 window.history.replaceState(null, null,
-                    l.pathname.slice(0, -1) + decoded + l.hash
+                    l.pathname + decoded + l.hash
                 );
             }
         }(window.location))
