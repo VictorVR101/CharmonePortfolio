@@ -31,17 +31,21 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script>
-        emailjs.init("YOUR_PUBLIC_KEY");
+        emailjs.init("YOUR_PUBLIC_KEY_HERE");
 
         window.sendEmail = async function (name, email, subject, message) {
             try {
-                await emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
-                    from_name: name,
-                    from_email: email,
-                    subject: subject,
-                    message: message,
-                    to_email: "YOUR_EMAIL@gmail.com"
-                });
+                await emailjs.send(
+                    "YOUR_SERVICE_ID_HERE",
+                    "YOUR_TEMPLATE_ID_HERE",
+                    {
+                        from_name: name,
+                        from_email: email,
+                        subject: subject,
+                        message: message,
+                        to_email: "charmone.strauss06@gmail.com"
+                    }
+                );
                 return true;
             } catch (e) {
                 console.error(e);
