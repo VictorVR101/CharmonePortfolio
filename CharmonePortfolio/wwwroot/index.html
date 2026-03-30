@@ -4,14 +4,26 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CharmonePortfolio</title>
+
+    <!-- Site title -->
+    <title>Charmone Strauss</title>
+
+    <!-- Base URL for Blazor routing -->
     <base href="/" />
+
+    <!-- Blazor WebAssembly preload -->
     <link rel="preload" id="webassembly" />
+
+    <!-- Main stylesheet -->
     <link rel="stylesheet" href="css/app.css" />
-    <!-- If you add any scoped CSS files, uncomment the following to load them
-    <link href="CharmonePortfolio.styles.css" rel="stylesheet" /> -->
+
+    <!-- Scoped component styles -->
+    <link href="CharmonePortfolio.styles.css" rel="stylesheet" />
+
+    <!-- Import map required by Blazor WebAssembly -->
     <script type="importmap"></script>
 
+    <!-- GitHub Pages SPA redirect fix — handles page refresh on sub-routes -->
     <script>
         (function (l) {
             if (l.search[1] === '/') {
@@ -27,22 +39,42 @@
 </head>
 
 <body>
+
+    <!-- Blazor app root — shows loading screen while WASM loads -->
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+        <div style="
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: #E0D6B8;
+            display: flex;
+            align-items: center;
+            justify-content: center;">
+            <p style="
+                font-family: Georgia, serif;
+                font-size: 0.75rem;
+                letter-spacing: 4px;
+                color: #B88A2C;
+                text-transform: uppercase;">
+                Charmone Strauss
+            </p>
+        </div>
     </div>
 
+    <!-- Blazor error UI — hidden via CSS -->
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
+
+    <!-- Blazor WebAssembly runtime -->
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 
+    <!-- EmailJS library for contact form -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <!-- EmailJS config and sendEmail function -->
     <script>
         emailjs.init("qjkq8B-3U8OyRKToP");
 
@@ -66,6 +98,7 @@
             }
         }
     </script>
+
 </body>
 
 </html>
