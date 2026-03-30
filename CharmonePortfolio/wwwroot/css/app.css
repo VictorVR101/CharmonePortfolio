@@ -379,3 +379,37 @@ main {
 .loading-progress-text {
     display: none;
 }
+
+.footer {
+    background-color: #800000;
+    color: #E0D6B8;
+    padding: 1.5rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+.footer-left {
+    color: #E0D6B8;
+}
+
+.footer-right {
+    color: #B88A2C;
+}
+
+@media (max-width: 768px) {
+    .footer {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+        padding: 1.5rem;
+    }
+}
+
+.portfolio-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+}
