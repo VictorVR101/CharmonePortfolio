@@ -1,3 +1,6 @@
+/* ========================================
+   RESET
+======================================== */
 * {
     margin: 0;
     padding: 0;
@@ -15,7 +18,9 @@ main {
     min-height: 100vh;
 }
 
-/* Navbar */
+/* ========================================
+   NAVBAR
+======================================== */
 .navbar {
     background-color: #800000;
     padding: 1.2rem 3rem;
@@ -52,6 +57,7 @@ main {
             color: #B88A2C;
         }
 
+/* Hamburger — hidden on desktop */
 .hamburger {
     display: none;
     flex-direction: column;
@@ -70,7 +76,45 @@ main {
         border-radius: 2px;
     }
 
-/* Hero */
+/* ========================================
+   BUTTONS
+======================================== */
+.btn-primary {
+    background-color: #800000;
+    color: #E0D6B8;
+    padding: 0.9rem 2rem;
+    text-decoration: none;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: background 0.3s;
+    border: none;
+    cursor: pointer;
+}
+
+    .btn-primary:hover {
+        background-color: #633A2C;
+    }
+
+.btn-outline {
+    border: 1px solid #800000;
+    color: #800000;
+    padding: 0.9rem 2rem;
+    text-decoration: none;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.3s;
+}
+
+    .btn-outline:hover {
+        background-color: #800000;
+        color: #E0D6B8;
+    }
+
+/* ========================================
+   HOME — HERO
+======================================== */
 .hero {
     min-height: calc(100vh - 70px);
     display: flex;
@@ -111,39 +155,9 @@ main {
     gap: 1rem;
 }
 
-/* Buttons */
-.btn-primary {
-    background-color: #800000;
-    color: #E0D6B8;
-    padding: 0.9rem 2rem;
-    text-decoration: none;
-    font-size: 0.85rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    transition: background 0.3s;
-}
-
-    .btn-primary:hover {
-        background-color: #633A2C;
-    }
-
-.btn-outline {
-    border: 1px solid #800000;
-    color: #800000;
-    padding: 0.9rem 2rem;
-    text-decoration: none;
-    font-size: 0.85rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    transition: all 0.3s;
-}
-
-    .btn-outline:hover {
-        background-color: #800000;
-        color: #E0D6B8;
-    }
-
-/* About */
+/* ========================================
+   ABOUT PAGE
+======================================== */
 .about-page {
     max-width: 900px;
     margin: 0 auto;
@@ -204,6 +218,18 @@ main {
     margin-top: 4rem;
 }
 
+/* ========================================
+   PORTFOLIO PAGE
+======================================== */
+.portfolio-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+}
+
+/* ========================================
+   CONTACT PAGE
+======================================== */
 .contact-page {
     max-width: 1000px;
     margin: 0 auto;
@@ -229,6 +255,9 @@ main {
     color: #633A2C;
     margin-top: 0.5rem;
     line-height: 1.8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .contact-form-wrap {
@@ -283,18 +312,49 @@ main {
     color: #800000;
 }
 
-@media (max-width: 768px) {
-    .contact-grid {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
+/* ========================================
+   FOOTER
+======================================== */
+.footer {
+    background-color: #800000;
+    color: #E0D6B8;
+    padding: 1.5rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
 }
-/* Mobile */
-@media (max-width: 768px) {
-    .hamburger {
-        display: flex;
-    }
 
+.footer-left {
+    color: #E0D6B8;
+}
+
+.footer-right {
+    color: #B88A2C;
+}
+
+/* ========================================
+   BLAZOR OVERRIDES
+======================================== */
+#blazor-error-ui {
+    display: none !important;
+}
+
+.loading-progress {
+    display: none;
+}
+
+.loading-progress-text {
+    display: none;
+}
+
+/* ========================================
+   MOBILE — RESPONSIVE
+======================================== */
+@media (max-width: 768px) {
+
+    /* Navbar */
     .navbar {
         padding: 1rem 1.5rem;
         flex-wrap: wrap;
@@ -303,6 +363,10 @@ main {
 
     .navbar-brand a {
         font-size: 1.1rem;
+    }
+
+    .hamburger {
+        display: flex;
     }
 
     .navbar-links {
@@ -325,6 +389,7 @@ main {
             letter-spacing: 1px;
         }
 
+    /* Hero */
     .hero-title {
         font-size: 3.5rem;
         letter-spacing: -1px;
@@ -346,11 +411,13 @@ main {
         padding: 0 2rem;
     }
 
-    .btn-primary, .btn-outline {
+    .btn-primary,
+    .btn-outline {
         text-align: center;
         padding: 1rem;
     }
 
+    /* About */
     .about-title {
         font-size: 3rem;
         letter-spacing: -1px;
@@ -365,56 +432,18 @@ main {
     .about-cta {
         flex-direction: column;
     }
-}
 
-/* Blazor nee*/
-#blazor-error-ui {
-    display: none !important;
-}
+    /* Contact */
+    .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
 
-.loading-progress {
-    display: none;
-}
-
-.loading-progress-text {
-    display: none;
-}
-
-.footer {
-    background-color: #800000;
-    color: #E0D6B8;
-    padding: 1.5rem 3rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-    letter-spacing: 1px;
-}
-
-.footer-left {
-    color: #E0D6B8;
-}
-
-.footer-right {
-    color: #B88A2C;
-}
-
-@media (max-width: 768px) {
+    /* Footer */
     .footer {
         flex-direction: column;
         text-align: center;
         gap: 0.5rem;
         padding: 1.5rem;
     }
-}
-
-.portfolio-page {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 4rem 2rem;
-}
-.contact-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
