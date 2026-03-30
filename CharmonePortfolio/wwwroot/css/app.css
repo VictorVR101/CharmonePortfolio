@@ -413,3 +413,8 @@ main {
     margin: 0 auto;
     padding: 4rem 2rem;
 }
+.contact-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
