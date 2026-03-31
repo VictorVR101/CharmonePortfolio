@@ -1,11 +1,341 @@
-﻿@page "/portfolio"
+@page "/portfolio"
 
-<PageTitle>Portfolio | Charmone Strauss</PageTitle>
+<PageTitle>Portfolio — Charmone Strauss</PageTitle>
 
 <div class="portfolio-page">
-    <div class="about-hero">
-        <div class="about-tag">MY WORK</div>
-        <h1 class="about-title">Portfolio</h1>
-    </div>
-    <p class="about-text">Coming soon — check back shortly!</p>
+
+    <!-- Page Header -->
+    <section class="portfolio-header">
+        <div class="portfolio-header-inner">
+            <p class="portfolio-eyebrow">Creative Work</p>
+            <h1 class="portfolio-title">Portfolio</h1>
+            <p class="portfolio-subtitle">
+                A collection of projects spanning photography, graphic design, and multimedia storytelling.
+            </p>
+        </div>
+    </section>
+
+    <!-- Filter Bar -->
+    <section class="portfolio-filters">
+        <div class="portfolio-filters-inner">
+            @foreach (var filter in Filters)
+            {
+                <button class="filter-btn @(ActiveFilter == filter ? "active" : "")"
+                        @onclick="() => SetFilter(filter)">
+                    @filter
+                </button>
+            }
+        </div>
+    </section>
+
+    <!-- Project Grid -->
+    <section class="portfolio-grid-section">
+        <div class="portfolio-grid">
+            @foreach (var project in FilteredProjects)
+            {
+                <div class="project-card" @onclick="() => OpenModal(project)">
+                    <div class="project-card-image">
+                        @if (!string.IsNullOrEmpty(project.ThumbnailUrl))
+                        {
+                            <img src="@project.ThumbnailUrl" alt="@project.Title" loading="lazy" />
+                        }
+                        else
+                        {
+                            <div class="project-card-placeholder">
+                                <span class="placeholder-icon">🖼</span>
+                            </div>
+                        }
+                        <div class="project-card-overlay">
+                            <span class="view-label">View Project</span>
+                        </div>
+                    </div>
+                    <div class="project-card-info">
+                        <span class="project-tag">@project.Category</span>
+                        <h3 class="project-card-title">@project.Title</h3>
+                        <p class="project-card-desc">@project.ShortDescription</p>
+                        <div class="project-card-meta">
+                            <span class="project-term">@project.Term</span>
+                            <div class="project-media-icons">
+                                @if (project.HasImages) { <span title="Images">📷</span> }
+                                @if (project.HasVideo) { <span title="Video">🎬</span> }
+                                @if (project.HasPdf) { <span title="PDF">📄</span> }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Coming Soon Placeholder Cards -->
+            @for (int i = 0; i < ComingSoonCount; i++)
+            {
+                <div class="project-card coming-soon">
+                    <div class="project-card-image">
+                        <div class="project-card-placeholder">
+                            <span class="placeholder-icon coming-soon-icon">✦</span>
+                            <span class="coming-soon-text">Coming Soon</span>
+                        </div>
+                    </div>
+                    <div class="project-card-info">
+                        <span class="project-tag">—</span>
+                        <h3 class="project-card-title">New Project</h3>
+                        <p class="project-card-desc">More work coming soon.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
 </div>
+
+<!-- Modal Lightbox -->
+@if (SelectedProject != null)
+{
+    <div class="modal-backdrop" @onclick="CloseModal">
+        <div class="modal-panel" @onclick:stopPropagation="true">
+
+            <button class="modal-close" @onclick="CloseModal" title="Close">✕</button>
+
+            <div class="modal-body">
+
+                <!-- Media Section -->
+                <div class="modal-media">
+                    @if (SelectedProject.Images != null && SelectedProject.Images.Count > 0)
+                    {
+                        <div class="modal-image-viewer">
+                            <img src="@SelectedProject.Images[CurrentImageIndex]"
+                                 alt="@SelectedProject.Title image @(CurrentImageIndex + 1)"
+                                 class="modal-main-image" />
+
+                            @if (SelectedProject.Images.Count > 1)
+                            {
+                                <div class="modal-image-nav">
+                                    <button class="img-nav-btn" @onclick="PrevImage"
+                                            disabled="@(CurrentImageIndex == 0)">‹</button>
+                                    <span class="img-counter">
+                                        @(CurrentImageIndex + 1) / @SelectedProject.Images.Count
+                                    </span>
+                                    <button class="img-nav-btn" @onclick="NextImage"
+                                            disabled="@(CurrentImageIndex == SelectedProject.Images.Count - 1)">›</button>
+                                </div>
+
+                                <div class="modal-thumbnails">
+                                    @for (int i = 0; i < SelectedProject.Images.Count; i++)
+                                    {
+                                        int idx = i;
+                                        <img src="@SelectedProject.Images[i]"
+                                             alt="Thumbnail @(i+1)"
+                                             class="modal-thumb @(CurrentImageIndex == idx ? "active" : "")"
+                                             @onclick="() => CurrentImageIndex = idx" />
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="modal-no-media">
+                            <span>🖼</span>
+                            <p>Images coming soon</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Info Section -->
+                <div class="modal-info">
+                    <span class="modal-tag">@SelectedProject.Category</span>
+                    <h2 class="modal-title">@SelectedProject.Title</h2>
+                    <p class="modal-term">@SelectedProject.Term</p>
+                    <p class="modal-description">@SelectedProject.FullDescription</p>
+
+                    <!-- PDF link -->
+                    @if (SelectedProject.HasPdf && !string.IsNullOrEmpty(SelectedProject.PdfUrl))
+                    {
+                        <a href="@SelectedProject.PdfUrl" target="_blank" class="modal-pdf-btn">
+                            📄 View PDF Document
+                        </a>
+                    }
+
+                    <!-- Video embed -->
+                    @if (SelectedProject.HasVideo && !string.IsNullOrEmpty(SelectedProject.VideoUrl))
+                    {
+                        <div class="modal-video-wrap">
+                            <video controls class="modal-video">
+                                <source src="@SelectedProject.VideoUrl" type="video/mp4" />
+                                Your browser does not support video.
+                            </video>
+                        </div>
+                    }
+
+                    <!-- Tags -->
+                    @if (SelectedProject.Tags != null && SelectedProject.Tags.Count > 0)
+                    {
+                        <div class="modal-tags">
+                            @foreach (var tag in SelectedProject.Tags)
+                            {
+                                <span class="modal-chip">@tag</span>
+                            }
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+
+    // ─── Data Model ────────────────────────────────────────────
+    private class Project
+    {
+        public string Title { get; set; } = "";
+        public string ShortDescription { get; set; } = "";
+        public string FullDescription { get; set; } = "";
+        public string Category { get; set; } = "";
+        public string Term { get; set; } = "";
+        public string? ThumbnailUrl { get; set; }
+        public List<string>? Images { get; set; }
+        public bool HasImages => Images != null && Images.Count > 0;
+        public bool HasVideo { get; set; }
+        public string? VideoUrl { get; set; }
+        public bool HasPdf { get; set; }
+        public string? PdfUrl { get; set; }
+        public List<string>? Tags { get; set; }
+    }
+
+    // ─── Project Data ──────────────────────────────────────────
+    // 📌 ADD YOUR PROJECTS HERE. Duplicate the block for each new project.
+    // Place media files in wwwroot/portfolio/term1/ etc.
+
+    private List<Project> AllProjects = new()
+    {
+        new Project
+        {
+            Title            = "Bauhaus Pop-Up Book — Design Studio",
+            ShortDescription = "A hand-crafted pop-up book with 5 spreads, each representing a design discipline reimagined in Bauhaus style through paper engineering, colour, and mechanical ingenuity.",
+            FullDescription  = "This Design Studio project for the Higher Certificate in Design Thinking challenged each discipline of design to be expressed through a Bauhaus-styled pop-up book spread. " +
+                               "Each of the 5 spreads followed the same rigorous process: mind map and planning, mechanism study, prototyping, and a photographed final. " +
+                               "Spread 01 — Graphic Design — features a colour wheel, Bauhaus typography spiralled to spell 'BAUHAUS', and a running man chased by design elements, all in bold yellow and black. " +
+                               "Spread 02 — Multimedia Design — uses v-folds and parallel folds to launch a rocket ship surrounded by app logos, a camera, globe, lightbulb, and pencil against a deep red and black base. " +
+                               "Spread 03 — Interior Design — recreates the Farnsworth House interior with Bauhaus textile patterns, Mondrian-influenced colour blocking in blue, red, and yellow, and a landscape window backdrop. " +
+                               "Spread 04 — 3D Animation — is a Bauhaus-styled recreation of the house from the film Up, complete with balloons, Carl's chair, the scout pin, and a mailbox. " +
+                               "Spread 05 — 2D Animation — stages the Triadic Ballet with pull-tab curtains, a sliding dancer mechanism, and a circular background element, in dramatic red and black.",
+            Category         = "Mixed Media",
+            Term             = "Term 1, 2025",
+            ThumbnailUrl     = "portfolio/ds-p2/thumb.jpg",
+            Images           = new List<string>
+            {
+                "portfolio/ds-p2/spread4-final-front.jpg",
+                "portfolio/ds-p2/spread4-final-top.jpg",
+                "portfolio/ds-p2/spread5-final-front.jpg",
+                "portfolio/ds-p2/spread3-final-front.jpg",
+                "portfolio/ds-p2/spread3-final-top.jpg",
+                "portfolio/ds-p2/spread2-final-front.jpg",
+                "portfolio/ds-p2/spread1-final-front.jpg",
+                "portfolio/ds-p2/spread1-final-top.jpg",
+            },
+            HasPdf           = true,
+            PdfUrl           = "portfolio/ds-p2/DS_P2_Submission.pdf",
+            HasVideo         = false,
+            Tags             = new List<string> { "Pop-Up Book", "Paper Engineering", "Bauhaus", "Book Design", "Design Studio", "Mixed Media", "3D Construction" },
+        },
+
+        new Project
+        {
+            Title            = "Homo-Cubis — Design Studio",
+            ShortDescription = "A 4-week mixed-media project exploring personal identity through hand-crafted geometric paper forms, original character design, and a final 3D paper-engineered figure.",
+            FullDescription  = "This Design Studio project for the Higher Certificate in Design Thinking used paper engineering and illustration to explore identity and character through geometric form. " +
+                               "Week 1 began with a paper plane exercise followed by the hand-construction of 9 geometric solids — cube, cone, cuboid, cylinder, hexagonal pyramid, hexagonal prism, dodecahedron, icosahedron, tetrahedron, triangular prism, and octahedron — each photographed in a DIY studio setup with process shots. " +
+                               "Week 2 produced 10 original character ideation sketches drawn from personal traits and archetypes: the alien, bookworm, dreamer, creative, cupid, anger, emotional, movie lover, inner child, and Princess Belle. " +
+                               "Week 3 refined three of these characters into fully proportioned, coloured illustrations. " +
+                               "Week 4 brought the cloud-dreamer character to life as a final 3D paper-engineered sculpture, photographed from the front, back, and three-quarter views in a controlled studio environment.",
+            Category         = "Mixed Media",
+            Term             = "Term 1, 2025",
+            ThumbnailUrl     = "portfolio/ds-p1/thumb.jpg",
+            Images           = new List<string>
+            {
+                "portfolio/ds-p1/character-final-front.jpg",
+                "portfolio/ds-p1/character-final-back.jpg",
+                "portfolio/ds-p1/character-final-threequarter.jpg",
+                "portfolio/ds-p1/characters-refined-colour.jpg",
+                "portfolio/ds-p1/character-sketches.jpg",
+                "portfolio/ds-p1/geometric-forms.jpg",
+                "portfolio/ds-p1/geometric-forms-process.jpg",
+            },
+            HasPdf           = true,
+            PdfUrl           = "portfolio/ds-p1/DS_P1_Submission.pdf",
+            HasVideo         = false,
+            Tags             = new List<string> { "Paper Engineering", "Character Design", "3D Construction", "Illustration", "Design Studio", "Identity", "Geometric Forms" },
+        },
+
+        new Project
+        {
+            Title            = "Perspective — Visual Communication",
+            ShortDescription = "A 4-week technical drawing portfolio covering one-point and two-point perspective, mark-making, texture studies, and geometric form construction in pencil.",
+            FullDescription  = "This Visual Communication project for the Higher Certificate in Design Thinking built foundational drawing skills across four weeks of structured exercises. " +
+                               "Week 1 introduced one-point perspective through warm-up drawings and three progressive attempts at rendering 'CHARMONE' in bold block letters converging to a single vanishing point, culminating in a clean final with construction lines removed. " +
+                               "Week 2 focused on mark-making: warm-up exercises were followed by a large texture block sheet exploring over 16 distinct pencil textures — hatching, crosshatching, stippling, spirals, contour lines, and grids. " +
+                               "The week concluded with a final version of 'CHARMONE' in one-point perspective with a unique hand-drawn texture applied to each letter. " +
+                               "Weeks 3 and 4 tackled two-point perspective across six geometric forms — boxes, cylinders, cones, pyramids, spheres, and triangular prisms — each with a first attempt and a shaded final. " +
+                               "Three combination drawings brought multiple forms together with full shading and cast shadows, demonstrating growing confidence with spatial reasoning and pencil technique.",
+            Category         = "Graphic Design",
+            Term             = "Term 1, 2025",
+            ThumbnailUrl     = "portfolio/vc-p1/thumb.jpg",
+            Images           = new List<string>
+            {
+                "portfolio/vc-p1/charmone-texture-final.jpg",
+                "portfolio/vc-p1/charmone-perspective-final.jpg",
+                "portfolio/vc-p1/combination-drawing-3.jpg",
+                "portfolio/vc-p1/combination-drawing-2.jpg",
+                "portfolio/vc-p1/texture-blocks.jpg",
+                "portfolio/vc-p1/sphere-final.jpg",
+                "portfolio/vc-p1/pyramid-final.jpg",
+            },
+            HasPdf           = true,
+            PdfUrl           = "portfolio/vc-p1/VC_P1_Submission.pdf",
+            HasVideo         = false,
+            Tags             = new List<string> { "Technical Drawing", "Perspective", "Mark Making", "Texture", "Visual Communication", "Pencil", "Geometric Forms" },
+        },
+
+        // ─── Add more projects below ───────────────────────────
+        // new Project { Title = "Term 2 Project", ... },
+    };
+
+    // ─── Filters ───────────────────────────────────────────────
+    private List<string> Filters = new() { "All", "Photography", "Graphic Design", "Video", "Mixed Media" };
+    private string ActiveFilter = "All";
+
+    private IEnumerable<Project> FilteredProjects =>
+        ActiveFilter == "All"
+            ? AllProjects
+            : AllProjects.Where(p => p.Category == ActiveFilter);
+
+    // Show placeholder cards to pad the grid (always show at least 3 cards)
+    private int ComingSoonCount => Math.Max(0, 3 - FilteredProjects.Count());
+
+    private void SetFilter(string filter) => ActiveFilter = filter;
+
+    // ─── Modal State ───────────────────────────────────────────
+    private Project? SelectedProject;
+    private int CurrentImageIndex = 0;
+
+    private void OpenModal(Project project)
+    {
+        SelectedProject = project;
+        CurrentImageIndex = 0;
+    }
+
+    private void CloseModal() => SelectedProject = null;
+
+    private void NextImage()
+    {
+        if (SelectedProject?.Images != null && CurrentImageIndex < SelectedProject.Images.Count - 1)
+            CurrentImageIndex++;
+    }
+
+    private void PrevImage()
+    {
+        if (CurrentImageIndex > 0)
+            CurrentImageIndex--;
+    }
+}
