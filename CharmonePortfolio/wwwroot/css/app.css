@@ -710,19 +710,58 @@ main {
 
     .modal-panel {
         max-height: 95vh;
+        max-width: 100%;
+        width: 100%;
         border-radius: 0;
     }
 
     .modal-body {
         grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+    }
+
+    .modal-media {
+        min-height: 280px;
+    }
+
+    .modal-main-image {
+        aspect-ratio: 16/9;
+    }
+
+    .modal-thumbnails {
+        max-height: 70px;
+    }
+
+    .modal-thumb {
+        width: 50px;
+        height: 38px;
     }
 
     .modal-info {
         padding: 1.5rem;
+        max-height: none;
     }
 
     .modal-title {
         font-size: 1.3rem;
+    }
+
+    .modal-description {
+        font-size: 0.85rem;
+    }
+
+    .modal-close {
+        position: fixed;
+        top: 0.5rem;
+        right: 0.5rem;
+        background-color: rgba(42, 42, 42, 0.8);
+        color: #E0D6B8;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 
