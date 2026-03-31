@@ -689,6 +689,55 @@ main {
 }
 
 /* ========================================
+   IMAGE ZOOM OVERLAY
+======================================== */
+.zoom-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.92);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+    padding: 1rem;
+}
+
+    .zoom-overlay img {
+        max-width: 95vw;
+        max-height: 95vh;
+        object-fit: contain;
+        display: block;
+    }
+
+.zoom-close {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: 1px solid #E0D6B8;
+    color: #E0D6B8;
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+    .zoom-close:hover {
+        background-color: #800000;
+        border-color: #800000;
+    }
+
+.modal-main-image {
+    cursor: zoom-in;
+}
+
+
+/* ========================================
    PORTFOLIO MOBILE
 ======================================== */
 @media (max-width: 768px) {

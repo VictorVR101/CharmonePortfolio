@@ -56,9 +56,18 @@
                         <div class="project-card-meta">
                             <span class="project-term">@project.Term</span>
                             <div class="project-media-icons">
-                                @if (project.HasImages) { <span title="Images">📷</span> }
-                                @if (project.HasVideo) { <span title="Video">🎬</span> }
-                                @if (project.HasPdf) { <span title="PDF">📄</span> }
+                                @if (project.HasImages)
+                                {
+                                    <span title="Images">📷</span>
+                                }
+                                @if (project.HasVideo)
+                                {
+                                    <span title="Video">🎬</span>
+                                }
+                                @if (project.HasPdf)
+                                {
+                                    <span title="PDF">📄</span>
+                                }
                             </div>
                         </div>
                     </div>
@@ -104,18 +113,24 @@
                         <div class="modal-image-viewer">
                             <img src="@SelectedProject.Images[CurrentImageIndex]"
                                  alt="@SelectedProject.Title image @(CurrentImageIndex + 1)"
-                                 class="modal-main-image" />
+                                 class="modal-main-image"
+                                 @onclick="() => OpenZoom(SelectedProject.Images[CurrentImageIndex])"
+                                 @onclick:stopPropagation="true" />
 
                             @if (SelectedProject.Images.Count > 1)
                             {
                                 <div class="modal-image-nav">
                                     <button class="img-nav-btn" @onclick="PrevImage"
-                                            disabled="@(CurrentImageIndex == 0)">‹</button>
+                                            disabled="@(CurrentImageIndex == 0)">
+                                        ‹
+                                    </button>
                                     <span class="img-counter">
                                         @(CurrentImageIndex + 1) / @SelectedProject.Images.Count
                                     </span>
                                     <button class="img-nav-btn" @onclick="NextImage"
-                                            disabled="@(CurrentImageIndex == SelectedProject.Images.Count - 1)">›</button>
+                                            disabled="@(CurrentImageIndex == SelectedProject.Images.Count - 1)">
+                                        ›
+                                    </button>
                                 </div>
 
                                 <div class="modal-thumbnails">
@@ -123,7 +138,7 @@
                                     {
                                         int idx = i;
                                         <img src="@SelectedProject.Images[i]"
-                                             alt="Thumbnail @(i+1)"
+                                             alt="Thumbnail @(i + 1)"
                                              class="modal-thumb @(CurrentImageIndex == idx ? "active" : "")"
                                              @onclick="() => CurrentImageIndex = idx" />
                                     }
@@ -183,6 +198,15 @@
     </div>
 }
 
+<!-- Zoom Overlay -->
+@if (ZoomedImageUrl != null)
+{
+    <div class="zoom-overlay" @onclick="CloseZoom">
+        <button class="zoom-close" @onclick="CloseZoom" @onclick:stopPropagation="true">✕</button>
+        <img src="@ZoomedImageUrl" alt="Zoomed image" @onclick:stopPropagation="true" />
+    </div>
+}
+
 @code {
 
     // ─── Data Model ────────────────────────────────────────────
@@ -204,9 +228,6 @@
     }
 
     // ─── Project Data ──────────────────────────────────────────
-    // 📌 ADD YOUR PROJECTS HERE. Duplicate the block for each new project.
-    // Place media files in wwwroot/portfolio/term1/ etc.
-
     private List<Project> AllProjects = new()
     {
         new Project
@@ -310,22 +331,27 @@
             ? AllProjects
             : AllProjects.Where(p => p.Category == ActiveFilter);
 
-    // Show placeholder cards to pad the grid (always show at least 3 cards)
     private int ComingSoonCount => Math.Max(0, 3 - FilteredProjects.Count());
 
     private void SetFilter(string filter) => ActiveFilter = filter;
 
     // ─── Modal State ───────────────────────────────────────────
     private Project? SelectedProject;
+    private string? ZoomedImageUrl;
     private int CurrentImageIndex = 0;
 
     private void OpenModal(Project project)
     {
         SelectedProject = project;
         CurrentImageIndex = 0;
+        ZoomedImageUrl = null;
     }
 
-    private void CloseModal() => SelectedProject = null;
+    private void CloseModal()
+    {
+        SelectedProject = null;
+        ZoomedImageUrl = null;
+    }
 
     private void NextImage()
     {
@@ -338,4 +364,7 @@
         if (CurrentImageIndex > 0)
             CurrentImageIndex--;
     }
+
+    private void OpenZoom(string imageUrl) => ZoomedImageUrl = imageUrl;
+    private void CloseZoom() => ZoomedImageUrl = null;
 }
