@@ -33,7 +33,8 @@
         <div class="portfolio-grid">
             @foreach (var project in FilteredProjects)
             {
-                <div class="project-card" @onclick="() => OpenModal(project)">
+                <div class="project-card @(project.Featured ? "project-card--featured" : "")"
+                     @onclick="() => OpenModal(project)">
                     <div class="project-card-image">
                         @if (!string.IsNullOrEmpty(project.ThumbnailUrl))
                         {
@@ -44,6 +45,10 @@
                             <div class="project-card-placeholder">
                                 <span class="placeholder-icon">🖼</span>
                             </div>
+                        }
+                        @if (project.Featured)
+                        {
+                            <div class="featured-badge">Featured</div>
                         }
                         <div class="project-card-overlay">
                             <span class="view-label">View Project</span>
@@ -108,16 +113,34 @@
 
                 <!-- Media Section -->
                 <div class="modal-media">
-                    @if (SelectedProject.Images != null && SelectedProject.Images.Count > 0)
+                    @{
+                        var allMedia = SelectedProject.GetAllMedia();
+                    }
+                    @if (allMedia.Count > 0)
                     {
-                        <div class="modal-image-viewer">
-                            <img src="@SelectedProject.Images[CurrentImageIndex]"
-                                 alt="@SelectedProject.Title image @(CurrentImageIndex + 1)"
-                                 class="modal-main-image"
-                                 @onclick="() => OpenZoom(SelectedProject.Images[CurrentImageIndex])"
-                                 @onclick:stopPropagation="true" />
+                        var current = allMedia[CurrentImageIndex];
 
-                            @if (SelectedProject.Images.Count > 1)
+                        <div class="modal-image-viewer">
+
+                            @if (current.Type == MediaItemType.Video)
+                            {
+                                <video controls autoplay
+                                       class="modal-main-video"
+                                       key="@current.Url">
+                                    <source src="@current.Url" type="video/mp4" />
+                                    Your browser does not support video.
+                                </video>
+                            }
+                            else
+                            {
+                                <img src="@current.Url"
+                                     alt="@SelectedProject.Title image @(CurrentImageIndex + 1)"
+                                     class="modal-main-image"
+                                     @onclick="() => OpenZoom(current.Url)"
+                                     @onclick:stopPropagation="true" />
+                            }
+
+                            @if (allMedia.Count > 1)
                             {
                                 <div class="modal-image-nav">
                                     <button class="img-nav-btn" @onclick="PrevImage"
@@ -125,22 +148,32 @@
                                         ‹
                                     </button>
                                     <span class="img-counter">
-                                        @(CurrentImageIndex + 1) / @SelectedProject.Images.Count
+                                        @(CurrentImageIndex + 1) / @allMedia.Count
                                     </span>
                                     <button class="img-nav-btn" @onclick="NextImage"
-                                            disabled="@(CurrentImageIndex == SelectedProject.Images.Count - 1)">
+                                            disabled="@(CurrentImageIndex == allMedia.Count - 1)">
                                         ›
                                     </button>
                                 </div>
 
                                 <div class="modal-thumbnails">
-                                    @for (int i = 0; i < SelectedProject.Images.Count; i++)
+                                    @for (int i = 0; i < allMedia.Count; i++)
                                     {
                                         int idx = i;
-                                        <img src="@SelectedProject.Images[i]"
-                                             alt="Thumbnail @(i + 1)"
-                                             class="modal-thumb @(CurrentImageIndex == idx ? "active" : "")"
-                                             @onclick="() => CurrentImageIndex = idx" />
+                                        var item = allMedia[i];
+                                        <div class="modal-thumb-wrap @(CurrentImageIndex == idx ? "active" : "")"
+                                             @onclick="() => CurrentImageIndex = idx">
+                                            @if (item.Type == MediaItemType.Video)
+                                            {
+                                                <div class="modal-thumb modal-thumb--video">🎬</div>
+                                            }
+                                            else
+                                            {
+                                                <img src="@item.Url"
+                                                     alt="Thumbnail @(i + 1)"
+                                                     class="modal-thumb" />
+                                            }
+                                        </div>
                                     }
                                 </div>
                             }
@@ -162,7 +195,6 @@
                     <p class="modal-term">@SelectedProject.Term</p>
                     <p class="modal-description">@SelectedProject.FullDescription</p>
 
-                    <!-- PDF link -->
                     @if (SelectedProject.HasPdf && !string.IsNullOrEmpty(SelectedProject.PdfUrl))
                     {
                         <a href="@SelectedProject.PdfUrl" target="_blank" class="modal-pdf-btn">
@@ -170,18 +202,6 @@
                         </a>
                     }
 
-                    <!-- Video embed -->
-                    @if (SelectedProject.HasVideo && !string.IsNullOrEmpty(SelectedProject.VideoUrl))
-                    {
-                        <div class="modal-video-wrap">
-                            <video controls class="modal-video">
-                                <source src="@SelectedProject.VideoUrl" type="video/mp4" />
-                                Your browser does not support video.
-                            </video>
-                        </div>
-                    }
-
-                    <!-- Tags -->
                     @if (SelectedProject.Tags != null && SelectedProject.Tags.Count > 0)
                     {
                         <div class="modal-tags">
@@ -209,6 +229,16 @@
 
 @code {
 
+    // ─── Media Types ───────────────────────────────────────────
+    private enum MediaItemType { Image, Video }
+
+    private class MediaItem
+    {
+        public MediaItemType Type { get; set; } = MediaItemType.Image;
+        public string Url { get; set; } = "";
+        public string? Caption { get; set; }
+    }
+
     // ─── Data Model ────────────────────────────────────────────
     private class Project
     {
@@ -217,19 +247,85 @@
         public string FullDescription { get; set; } = "";
         public string Category { get; set; } = "";
         public string Term { get; set; } = "";
+        public bool Featured { get; set; } = false;
         public string? ThumbnailUrl { get; set; }
+
+        // Images
         public List<string>? Images { get; set; }
         public bool HasImages => Images != null && Images.Count > 0;
-        public bool HasVideo { get; set; }
-        public string? VideoUrl { get; set; }
+
+        // Videos — now supports multiple
+        public List<string>? VideoUrls { get; set; }
+        public bool HasVideo => VideoUrls != null && VideoUrls.Count > 0;
+
+        // Keep single VideoUrl for backwards compat
+        public string? VideoUrl
+        {
+            get => VideoUrls?.FirstOrDefault();
+            set { if (value != null) VideoUrls = new List<string> { value }; }
+        }
+
+        // PDF
         public bool HasPdf { get; set; }
         public string? PdfUrl { get; set; }
+
         public List<string>? Tags { get; set; }
+
+        // Returns all media in display order: videos first, then images
+        public List<MediaItem> GetAllMedia()
+        {
+            var result = new List<MediaItem>();
+            if (VideoUrls != null)
+                foreach (var v in VideoUrls)
+                    result.Add(new MediaItem { Type = MediaItemType.Video, Url = v });
+            if (Images != null)
+                foreach (var img in Images)
+                    result.Add(new MediaItem { Type = MediaItemType.Image, Url = img });
+            return result;
+        }
     }
 
     // ─── Project Data ──────────────────────────────────────────
     private List<Project> AllProjects = new()
     {
+        // ── 1. FEATURED — Corporate Identity ──────────────────
+        new Project
+        {
+            Title            = "Corporate Identity: Penguin Random House",
+            ShortDescription = "Two logo animations for Penguin Random House built in Adobe After Effects, with branded merchandise mockups — the full corporate identity package.",
+            FullDescription  = "A full corporate identity project for Penguin Random House, including two logo animations built in Adobe After Effects and branded merchandise mockups. " +
+                               "Animation 1 uses a quill that draws a line before the Penguin logo builds itself on screen using trim paths. " +
+                               "Animation 2 uses a domino book-fall sequence with the Penguin logo emerging and settling into frame, title typing in beside it. " +
+                               "Principles applied include anticipation, squash & stretch, ease in/out, follow-through, and staging. " +
+                               "The project also includes branded mug mockups and tote bag mockups carrying the Penguin Random House identity.",
+            Category         = "Motion Design",
+            Term             = "Term 3, 2025",
+            Featured         = true,
+            ThumbnailUrl     = "portfolio/ds-p2-t3/thumb.jpg",
+            VideoUrls        = new List<string>
+            {
+                "portfolio/ds-p2-t3/animation-1.mp4",
+                "portfolio/ds-p2-t3/animation-2.mp4",
+            },
+            Images           = new List<string>
+            {
+                "portfolio/ds-p2-t3/storyboard-anim1.jpg",
+                "portfolio/ds-p2-t3/storyboard-anim2.jpg",
+                "portfolio/ds-p2-t3/medium-fidelity.jpg",
+                "portfolio/ds-p2-t3/high-fidelity.jpg",
+                "portfolio/ds-p2-t3/process-1.jpg",
+                "portfolio/ds-p2-t3/process-2.jpg",
+                "portfolio/ds-p2-t3/mug-mockup-1.jpg",
+                "portfolio/ds-p2-t3/mug-mockup-2.jpg",
+                "portfolio/ds-p2-t3/tote-front.jpg",
+                "portfolio/ds-p2-t3/tote-back.jpg",
+            },
+            HasPdf           = true,
+            PdfUrl           = "portfolio/ds-p2-t3/DS_P2_T3_Submission.pdf",
+            Tags             = new List<string> { "Motion Design", "After Effects", "Logo Animation", "Corporate Identity", "Merchandise", "Penguin Random House", "Design Studio" },
+        },
+
+        // ── 2. Bauhaus Pop-Up Book ─────────────────────────────
         new Project
         {
             Title            = "Bauhaus Pop-Up Book — Design Studio",
@@ -257,10 +353,10 @@
             },
             HasPdf           = true,
             PdfUrl           = "portfolio/ds-p2/DS_P2_Submission.pdf",
-            HasVideo         = false,
             Tags             = new List<string> { "Pop-Up Book", "Paper Engineering", "Bauhaus", "Book Design", "Design Studio", "Mixed Media", "3D Construction" },
         },
 
+        // ── 3. Homo-Cubis ──────────────────────────────────────
         new Project
         {
             Title            = "Homo-Cubis — Design Studio",
@@ -285,10 +381,10 @@
             },
             HasPdf           = true,
             PdfUrl           = "portfolio/ds-p1/DS_P1_Submission.pdf",
-            HasVideo         = false,
             Tags             = new List<string> { "Paper Engineering", "Character Design", "3D Construction", "Illustration", "Design Studio", "Identity", "Geometric Forms" },
         },
 
+        // ── 4. Perspective ─────────────────────────────────────
         new Project
         {
             Title            = "Perspective — Visual Communication",
@@ -314,10 +410,10 @@
             },
             HasPdf           = true,
             PdfUrl           = "portfolio/vc-p1/VC_P1_Submission.pdf",
-            HasVideo         = false,
             Tags             = new List<string> { "Technical Drawing", "Perspective", "Mark Making", "Texture", "Visual Communication", "Pencil", "Geometric Forms" },
         },
 
+        // ── 5. Lego: Folklore ──────────────────────────────────
         new Project
         {
             Title            = "Lego: Folklore — Design Studio",
@@ -339,10 +435,10 @@
             },
             HasPdf           = true,
             PdfUrl           = "portfolio/ds-p1-t2/DS_P1_T2_Submission.pdf",
-            HasVideo         = false,
             Tags             = new List<string> { "Linocut", "Printmaking", "Folklore", "T-Shirt Design", "Poster Design", "Design Studio", "Mixed Media", "Lego" },
         },
 
+        // ── 6. Head Structure ──────────────────────────────────
         new Project
         {
             Title            = "Head Structure — Visual Communication",
@@ -364,15 +460,12 @@
             },
             HasPdf           = true,
             PdfUrl           = "portfolio/vc-p2/VC_P2_Submission.pdf",
-            HasVideo         = false,
             Tags             = new List<string> { "Portrait Drawing", "Loomis Method", "Riley Method", "Head Structure", "Pencil", "Visual Communication", "Observational Drawing" },
         },
-
-        // ─── Add more projects below ───────────────────────────
     };
 
     // ─── Filters ───────────────────────────────────────────────
-    private List<string> Filters = new() { "All", "Photography", "Graphic Design", "Video", "Mixed Media" };
+    private List<string> Filters = new() { "All", "Motion Design", "Mixed Media", "Graphic Design", "Photography" };
     private string ActiveFilter = "All";
 
     private IEnumerable<Project> FilteredProjects =>
@@ -404,14 +497,14 @@
 
     private void NextImage()
     {
-        if (SelectedProject?.Images != null && CurrentImageIndex < SelectedProject.Images.Count - 1)
-            CurrentImageIndex++;
+        if (SelectedProject == null) return;
+        var count = SelectedProject.GetAllMedia().Count;
+        if (CurrentImageIndex < count - 1) CurrentImageIndex++;
     }
 
     private void PrevImage()
     {
-        if (CurrentImageIndex > 0)
-            CurrentImageIndex--;
+        if (CurrentImageIndex > 0) CurrentImageIndex--;
     }
 
     private void OpenZoom(string imageUrl) => ZoomedImageUrl = imageUrl;
