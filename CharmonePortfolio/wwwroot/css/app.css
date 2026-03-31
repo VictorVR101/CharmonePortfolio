@@ -116,13 +116,41 @@ main {
    HOME — HERO
 ======================================== */
 .hero {
+    position: relative;
     min-height: calc(100vh - 70px);
     display: flex;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
-    text-align: center;
-    padding: 2rem;
+    overflow: hidden;
+    background-color: #1a0505;
+}
+
+.hero-photo-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.hero-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    opacity: 0.5;
+    filter: grayscale(15%);
+}
+
+.hero-photo-fade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient( to right, rgba(26, 5, 5, 0.97) 0%, rgba(26, 5, 5, 0.85) 35%, rgba(26, 5, 5, 0.3) 65%, rgba(26, 5, 5, 0.0) 100% );
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    padding: 0 6vw;
+    max-width: 680px;
+    text-align: left;
 }
 
 .hero-tag {
@@ -136,7 +164,7 @@ main {
 .hero-title {
     font-size: 6rem;
     font-weight: 400;
-    color: #800000;
+    color: #E0D6B8;
     line-height: 1;
     margin-bottom: 1.5rem;
     letter-spacing: -2px;
@@ -144,7 +172,7 @@ main {
 
 .hero-sub {
     font-size: 1.1rem;
-    color: #633A2C;
+    color: rgba(224, 214, 184, 0.75);
     max-width: 400px;
     line-height: 1.8;
     margin-bottom: 2.5rem;
@@ -154,7 +182,6 @@ main {
     display: flex;
     gap: 1rem;
 }
-
 /* ========================================
    ABOUT PAGE
 ======================================== */
@@ -217,10 +244,6 @@ main {
     gap: 1rem;
     margin-top: 4rem;
 }
-
-/* ========================================
-   PORTFOLIO PAGE
-======================================== */
 
 /* ========================================
    PORTFOLIO PAGE
@@ -561,8 +584,9 @@ main {
     gap: 0.4rem;
     padding: 0.8rem;
     background-color: #1a1a1a;
-    overflow-x: auto;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .modal-thumb {
@@ -985,17 +1009,27 @@ main {
     .hero-tag {
         font-size: 0.65rem;
         letter-spacing: 2px;
-        text-align: center;
     }
 
     .hero-sub {
         font-size: 1rem;
     }
 
+    .hero-photo-fade {
+        background: linear-gradient( to bottom, rgba(26, 5, 5, 0.6) 0%, rgba(26, 5, 5, 0.92) 50%, rgba(26, 5, 5, 0.98) 100% );
+    }
+
+    .hero-content {
+        padding: 0 1.5rem;
+        text-align: center;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+    }
+
     .hero-buttons {
         flex-direction: column;
         width: 100%;
-        padding: 0 2rem;
     }
 
     .btn-primary,
