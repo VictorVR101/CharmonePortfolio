@@ -1,29 +1,79 @@
-/* ========================================
-   THEME VARIABLES
-======================================== */
+/* ============================================================
+   CHARMONE STRAUSS — PORTFOLIO STYLESHEET
+   ============================================================
+   TABLE OF CONTENTS
+   ---------------------------------------------------------
+   1.  THEME VARIABLES (day + night mode)
+   2.  RESET
+   3.  BODY & BASE
+   4.  NAVBAR
+       4a. Brand / Logo
+       4b. Nav Right (toggle + hamburger)
+       4c. Hamburger button + X animation
+       4d. Dropdown nav links
+   5.  THEME TOGGLE BUTTON
+   6.  BUTTONS (primary + outline)
+   7.  HOME — HERO
+   8.  ABOUT PAGE
+   9.  PORTFOLIO PAGE
+       9a. Page header
+       9b. Filter bar
+       9c. Project grid
+       9d. Project card
+       9e. Featured card
+       9f. Card overlay + info
+       9g. Coming soon state
+   10. MODAL LIGHTBOX
+       10a. Backdrop + panel
+       10b. Media viewer (images + video)
+       10c. Thumbnail strip
+       10d. Modal info panel
+       10e. Tags + chips
+   11. IMAGE ZOOM OVERLAY
+   12. CONTACT PAGE
+   13. FOOTER
+   14. BLAZOR OVERRIDES
+   15. MOBILE — RESPONSIVE (max-width: 768px)
+   ============================================================ */
+
+
+/* ============================================================
+   1. THEME VARIABLES
+   ------------------------------------------------------------
+   DAY MODE  = warm cream palette (default)
+   NIGHT MODE = deep burgundy dark palette
+   To tweak a colour, change it here — it updates everywhere.
+   ============================================================ */
 :root {
-    --color-bg: #E0D6B8;
-    --color-surface: #EDE5D0;
-    --color-card: #F5F0E8;
-    --color-card-placeholder: #DDD6C0;
+    /* --- Backgrounds --- */
+    --color-bg: #E0D6B8; /* page background */
+    --color-surface: #EDE5D0; /* subtle surface lift */
+    --color-card: #F5F0E8; /* portfolio cards */
+    --color-card-placeholder: #DDD6C0; /* card image placeholder */
+    /* --- Navbar & Footer --- */
     --color-navbar: #800000;
     --color-navbar-text: #E0D6B8;
     --color-footer: #800000;
     --color-footer-text: #E0D6B8;
-    --color-footer-credit: #B88A2C;
+    --color-footer-credit: #B88A2C; /* "Developed by" line */
+    /* --- Typography --- */
     --color-text-primary: #2a2a2a;
-    --color-text-secondary: #633A2C;
-    --color-accent: #800000;
-    --color-accent-hover: #633A2C;
-    --color-gold: #B88A2C;
-    --color-gold-dark: #B8860B;
+    --color-text-secondary: #633A2C; /* body copy, subtitles */
+    /* --- Accent / Brand --- */
+    --color-accent: #800000; /* maroon — primary CTA colour */
+    --color-accent-hover: #633A2C; /* darker brown on hover */
+    --color-gold: #B88A2C; /* gold — labels, tags, borders */
+    --color-gold-dark: #B8860B; /* darker gold for featured border */
+    /* --- Borders & Shadows --- */
     --color-border: rgba(184, 138, 44, 0.2);
     --color-border-solid: #B88A2C;
     --color-shadow: rgba(128, 0, 0, 0.12);
-    --color-overlay: rgba(128, 0, 0, 0.75);
+    /* --- Overlays --- */
+    --color-overlay: rgba(128, 0, 0, 0.75); /* card hover overlay */
+    /* --- Modal --- */
     --color-modal-bg: #E0D6B8;
-    --color-modal-media-bg: #2a2a2a;
-    --color-modal-nav-bg: #1a1a1a;
+    --color-modal-media-bg: #2a2a2a; /* dark panel behind images */
+    --color-modal-nav-bg: #1a1a1a; /* thumbnail strip background */
     --color-modal-text: #633A2C;
     --color-modal-close: #800000;
     --color-modal-close-hover: #633A2C;
@@ -31,38 +81,50 @@
     --color-modal-chip-border: rgba(128, 0, 0, 0.2);
     --color-modal-chip-text: #800000;
     --color-modal-tags-border: rgba(184, 138, 44, 0.3);
+    /* --- Form Inputs --- */
     --color-input-bg: transparent;
     --color-input-text: #2a2a2a;
     --color-input-border: #B88A2C;
     --color-input-focus: #800000;
-    --color-featured-bg: #E0D6B8;
+    /* --- Featured Card --- */
+    --color-featured-bg: #E0D6B8; /* cream bg behind logo */
     --color-featured-border: #B88A2C;
+    /* --- Nav Dropdown --- */
     --color-nav-items-bg: #800000;
     --color-nav-divider: rgba(224, 214, 184, 0.15);
+    /* --- Mobile Modal Close --- */
     --color-mobile-close-bg: rgba(42, 42, 42, 0.8);
     --color-mobile-close-text: #E0D6B8;
 }
 
+/* NIGHT MODE overrides — applied when <html data-theme="night"> */
 [data-theme="night"] {
+    /* --- Backgrounds --- */
     --color-bg: #150A0A;
     --color-surface: #220E0E;
     --color-card: #341515;
     --color-card-placeholder: #3D1A1A;
+    /* --- Navbar & Footer --- */
     --color-navbar: #1A0808;
     --color-navbar-text: #F0E6D0;
     --color-footer: #1A0808;
     --color-footer-text: #F0E6D0;
     --color-footer-credit: #D4A030;
+    /* --- Typography --- */
     --color-text-primary: #F0E6D0;
     --color-text-secondary: #C8A882;
+    /* --- Accent / Brand --- */
     --color-accent: #A00000;
-    --color-accent-hover: #C00000;
+    --color-accent-hover: #C00000; /* lighter on hover in dark mode */
     --color-gold: #B88A2C;
     --color-gold-dark: #D4A030;
+    /* --- Borders & Shadows --- */
     --color-border: rgba(184, 138, 44, 0.15);
     --color-border-solid: #8A5A2A;
     --color-shadow: rgba(0, 0, 0, 0.4);
+    /* --- Overlays --- */
     --color-overlay: rgba(160, 0, 0, 0.8);
+    /* --- Modal --- */
     --color-modal-bg: #2A1010;
     --color-modal-media-bg: #0A0404;
     --color-modal-nav-bg: #0F0606;
@@ -73,21 +135,26 @@
     --color-modal-chip-border: rgba(160, 0, 0, 0.35);
     --color-modal-chip-text: #F0A0A0;
     --color-modal-tags-border: rgba(184, 138, 44, 0.2);
+    /* --- Form Inputs --- */
     --color-input-bg: transparent;
     --color-input-text: #F0E6D0;
     --color-input-border: #8A5A2A;
     --color-input-focus: #A00000;
+    /* --- Featured Card --- */
     --color-featured-bg: #2A1010;
     --color-featured-border: #D4A030;
+    /* --- Nav Dropdown --- */
     --color-nav-items-bg: #1A0808;
     --color-nav-divider: rgba(240, 230, 208, 0.1);
+    /* --- Mobile Modal Close --- */
     --color-mobile-close-bg: rgba(10, 4, 4, 0.9);
     --color-mobile-close-text: #F0E6D0;
 }
 
-/* ========================================
-   RESET
-======================================== */
+
+/* ============================================================
+   2. RESET
+   ============================================================ */
 * {
     margin: 0;
     padding: 0;
@@ -95,6 +162,10 @@
     outline: none;
 }
 
+
+/* ============================================================
+   3. BODY & BASE
+   ============================================================ */
 body {
     font-family: 'Georgia', serif;
     background-color: var(--color-bg);
@@ -105,9 +176,10 @@ main {
     min-height: 100vh;
 }
 
-/* ========================================
-   NAVBAR
-======================================== */
+
+/* ============================================================
+   4. NAVBAR
+   ============================================================ */
 .navbar {
     background-color: var(--color-navbar);
     padding: 1.2rem 3rem;
@@ -119,6 +191,8 @@ main {
     z-index: 1000;
 }
 
+/* 4a. Brand / Logo
+   ---------------------------------------------------------- */
 .navbar-brand a {
     color: var(--color-navbar-text);
     text-decoration: none;
@@ -126,27 +200,21 @@ main {
     letter-spacing: 2px;
 }
 
-.navbar-links {
+/* 4b. Nav Right — wraps theme toggle + hamburger together
+   margin-left: auto pushes the group to the far right
+   ---------------------------------------------------------- */
+.navbar-right {
     display: flex;
-    gap: 2.5rem;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
 }
 
-    .navbar-links a {
-        color: var(--color-navbar-text);
-        text-decoration: none;
-        font-size: 0.9rem;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        transition: color 0.3s;
-    }
-
-        .navbar-links a:hover {
-            color: var(--color-gold);
-        }
-
-/* Hamburger — hidden on desktop */
+/* 4c. Hamburger — always visible on ALL screen sizes
+   To hide on desktop: add display:none in a min-width query
+   ---------------------------------------------------------- */
 .hamburger {
-    display: none;
+    display: flex;
     flex-direction: column;
     gap: 5px;
     background: none;
@@ -161,11 +229,95 @@ main {
         height: 2px;
         background-color: var(--color-navbar-text);
         border-radius: 2px;
+        transition: transform 0.3s, opacity 0.3s;
     }
 
-/* ========================================
-   BUTTONS
-======================================== */
+    /* Animates into an X when .open is applied */
+    .hamburger.open span:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+    }
+
+    .hamburger.open span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger.open span:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
+    }
+
+/* 4d. Dropdown nav links
+   Hidden by default — shown when .open class is toggled.
+   Drops from top-right as an absolute positioned panel.
+   ---------------------------------------------------------- */
+.navbar-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 220px; /* ← change this to adjust dropdown width */
+    flex-direction: column;
+    gap: 0;
+    background-color: var(--color-nav-items-bg);
+    box-shadow: 0 8px 24px var(--color-shadow);
+    z-index: 999;
+}
+
+    .navbar-links.open {
+        display: flex;
+    }
+
+    .navbar-links a {
+        color: var(--color-navbar-text);
+        text-decoration: none;
+        font-size: 0.85rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--color-nav-divider);
+        transition: color 0.3s, background 0.3s;
+    }
+
+        .navbar-links a:hover {
+            color: var(--color-gold);
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+
+/* ============================================================
+   5. THEME TOGGLE BUTTON
+   Logic lives in Shared/ThemeToggle.razor
+   Tweak size / border radius here.
+   ============================================================ */
+.theme-toggle {
+    background: transparent;
+    border: 1.5px solid var(--color-navbar-text);
+    color: var(--color-navbar-text);
+    border-radius: 50%;
+    width: 36px; /* ← change to resize the toggle button */
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+}
+
+    .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+.theme-toggle__icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+
+/* ============================================================
+   6. BUTTONS
+   ============================================================ */
+
+/* Solid filled — primary CTA */
 .btn-primary {
     background-color: var(--color-accent);
     color: var(--color-navbar-text);
@@ -183,6 +335,7 @@ main {
         background-color: var(--color-accent-hover);
     }
 
+/* Ghost outlined — secondary CTA */
 .btn-outline {
     border: 1px solid var(--color-accent);
     color: var(--color-accent);
@@ -199,9 +352,10 @@ main {
         color: var(--color-navbar-text);
     }
 
-/* ========================================
-   HOME — HERO
-======================================== */
+
+/* ============================================================
+   7. HOME — HERO
+   ============================================================ */
 .hero {
     min-height: calc(100vh - 70px);
     display: flex;
@@ -228,6 +382,7 @@ main {
     text-transform: uppercase;
 }
 
+/* Large display name — change font-size to scale it */
 .hero-title {
     font-size: 6rem;
     font-weight: 400;
@@ -250,6 +405,7 @@ main {
     gap: 1rem;
 }
 
+/* Hero photo — absolute positioned on the right edge */
 .hero-photo-wrap {
     position: absolute;
     right: 0;
@@ -268,9 +424,10 @@ main {
     opacity: 0.9;
 }
 
-/* ========================================
-   ABOUT PAGE
-======================================== */
+
+/* ============================================================
+   8. ABOUT PAGE
+   ============================================================ */
 .about-page {
     max-width: 900px;
     margin: 0 auto;
@@ -297,9 +454,10 @@ main {
     letter-spacing: -2px;
 }
 
+/* Two-column: label left, content right */
 .about-block {
     display: grid;
-    grid-template-columns: 200px 1fr;
+    grid-template-columns: 200px 1fr; /* ← adjust label column width here */
     gap: 2rem;
     padding: 2.5rem 0;
     align-items: start;
@@ -319,6 +477,7 @@ main {
     line-height: 1.9;
 }
 
+/* Thin gold rule between sections */
 .about-divider {
     height: 1px;
     background-color: var(--color-gold);
@@ -331,16 +490,18 @@ main {
     margin-top: 4rem;
 }
 
-/* ========================================
-   PORTFOLIO PAGE
-======================================== */
+
+/* ============================================================
+   9. PORTFOLIO PAGE
+   ============================================================ */
 .portfolio-page {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem 6rem;
 }
 
-/* Header */
+/* 9a. Page header
+   ---------------------------------------------------------- */
 .portfolio-header {
     padding: 5rem 0 3rem;
     text-align: center;
@@ -371,7 +532,8 @@ main {
     line-height: 1.8;
 }
 
-/* Filter Bar */
+/* 9b. Filter bar
+   ---------------------------------------------------------- */
 .portfolio-filters {
     margin-bottom: 3rem;
 }
@@ -396,19 +558,16 @@ main {
     transition: all 0.3s;
 }
 
-    .filter-btn:hover {
-        background-color: var(--color-accent);
-        border-color: var(--color-accent);
-        color: var(--color-navbar-text);
-    }
-
+    .filter-btn:hover,
     .filter-btn.active {
         background-color: var(--color-accent);
         border-color: var(--color-accent);
         color: var(--color-navbar-text);
     }
 
-/* Project Grid */
+/* 9c. Project grid
+   Change repeat(3) to repeat(2) for 2 columns etc.
+   ---------------------------------------------------------- */
 .portfolio-grid-section {
     width: 100%;
 }
@@ -419,7 +578,8 @@ main {
     gap: 2rem;
 }
 
-/* Project Card */
+/* 9d. Project card
+   ---------------------------------------------------------- */
 .project-card {
     background-color: var(--color-card);
     cursor: pointer;
@@ -451,13 +611,14 @@ main {
     transform: scale(1.04);
 }
 
-/* Featured Card */
+/* 9e. Featured card — gold border, taller image, logo display
+   ---------------------------------------------------------- */
 .project-card--featured {
     border: 2px solid var(--color-featured-border);
 }
 
     .project-card--featured .project-card-image {
-        height: 320px;
+        height: 320px; /* ← adjust featured image height here */
         aspect-ratio: unset;
     }
 
@@ -467,6 +628,7 @@ main {
             padding: 30px;
         }
 
+/* Gold "Featured" badge top-left of image */
 .featured-badge {
     position: absolute;
     top: 12px;
@@ -482,6 +644,7 @@ main {
     z-index: 2;
 }
 
+/* Placeholder shown when card has no image */
 .project-card-placeholder {
     width: 100%;
     height: 100%;
@@ -498,6 +661,8 @@ main {
     opacity: 0.4;
 }
 
+/* 9f. Card hover overlay + info section
+   ---------------------------------------------------------- */
 .project-card-overlay {
     position: absolute;
     inset: 0;
@@ -539,6 +704,7 @@ main {
     line-height: 1.3;
 }
 
+/* Clamps card description to 3 lines */
 .project-card-desc {
     font-size: 0.85rem;
     color: var(--color-text-secondary);
@@ -571,7 +737,8 @@ main {
     font-size: 0.85rem;
 }
 
-/* Coming Soon Cards */
+/* 9g. Coming soon state — greyed out, non-interactive
+   ---------------------------------------------------------- */
 .project-card.coming-soon {
     opacity: 0.45;
     cursor: default;
@@ -589,9 +756,13 @@ main {
     color: var(--color-gold);
 }
 
-/* ========================================
-   MODAL LIGHTBOX
-======================================== */
+
+/* ============================================================
+   10. MODAL LIGHTBOX
+   ============================================================ */
+
+/* 10a. Backdrop + panel
+   ---------------------------------------------------------- */
 .modal-backdrop {
     position: fixed;
     inset: 0;
@@ -606,7 +777,7 @@ main {
 .modal-panel {
     background-color: var(--color-modal-bg);
     width: 100%;
-    max-width: 1000px;
+    max-width: 1000px; /* ← change to resize modal width */
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
@@ -630,12 +801,14 @@ main {
         color: var(--color-modal-close-hover);
     }
 
+/* Two-column: media left, info right */
 .modal-body {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
 }
 
-/* Modal Media */
+/* 10b. Media viewer (images + video)
+   ---------------------------------------------------------- */
 .modal-media {
     background-color: var(--color-modal-media-bg);
     min-height: 400px;
@@ -664,6 +837,7 @@ main {
     display: block;
 }
 
+/* Prev / Next navigation bar */
 .modal-image-nav {
     display: flex;
     align-items: center;
@@ -703,6 +877,8 @@ main {
     color: var(--color-navbar-text);
 }
 
+/* 10c. Thumbnail strip
+   ---------------------------------------------------------- */
 .modal-thumbnails {
     display: flex;
     gap: 0.4rem;
@@ -743,6 +919,7 @@ main {
     opacity: 1;
 }
 
+/* Video thumbnail — shows play icon instead of image */
 .modal-thumb--video {
     width: 60px;
     height: 45px;
@@ -753,6 +930,7 @@ main {
     font-size: 1.2rem;
 }
 
+/* Empty state when no media exists */
 .modal-no-media {
     flex: 1;
     display: flex;
@@ -770,7 +948,8 @@ main {
         text-transform: uppercase;
     }
 
-/* Modal Info */
+/* 10d. Modal info panel (right side)
+   ---------------------------------------------------------- */
 .modal-info {
     padding: 2.5rem;
     display: flex;
@@ -808,6 +987,7 @@ main {
     line-height: 1.85;
 }
 
+/* PDF download button inside modal */
 .modal-pdf-btn {
     display: inline-flex;
     align-items: center;
@@ -828,6 +1008,8 @@ main {
         background-color: var(--color-accent-hover);
     }
 
+/* 10e. Tags + chips at bottom of info panel
+   ---------------------------------------------------------- */
 .modal-tags {
     display: flex;
     flex-wrap: wrap;
@@ -847,9 +1029,11 @@ main {
     padding: 0.3rem 0.7rem;
 }
 
-/* ========================================
-   IMAGE ZOOM OVERLAY
-======================================== */
+
+/* ============================================================
+   11. IMAGE ZOOM OVERLAY
+   Full-screen lightbox when clicking a modal image.
+   ============================================================ */
 .zoom-overlay {
     position: fixed;
     inset: 0;
@@ -891,9 +1075,10 @@ main {
         border-color: var(--color-accent);
     }
 
-/* ========================================
-   CONTACT PAGE
-======================================== */
+
+/* ============================================================
+   12. CONTACT PAGE
+   ============================================================ */
 .contact-page {
     max-width: 1000px;
     margin: 0 auto;
@@ -904,6 +1089,7 @@ main {
     margin-bottom: 4rem;
 }
 
+/* Two-column: info left, form right */
 .contact-grid {
     display: grid;
     grid-template-columns: 1fr 1.5fr;
@@ -943,6 +1129,7 @@ main {
     text-transform: uppercase;
 }
 
+/* Underline-only input — no box border */
 .form-input {
     background: var(--color-input-bg);
     border: none;
@@ -976,9 +1163,10 @@ main {
     color: var(--color-accent);
 }
 
-/* ========================================
-   FOOTER
-======================================== */
+
+/* ============================================================
+   13. FOOTER
+   ============================================================ */
 .footer {
     background-color: var(--color-footer);
     color: var(--color-footer-text);
@@ -994,64 +1182,45 @@ main {
     color: var(--color-footer-text);
 }
 
+/* "Developed by Victor" — gold accent */
 .footer-right {
     color: var(--color-footer-credit);
 }
 
-/* ========================================
-   BLAZOR OVERRIDES
-======================================== */
+
+/* ============================================================
+   14. BLAZOR OVERRIDES
+   Hides default Blazor loading bar and error UI.
+   ============================================================ */
 #blazor-error-ui {
     display: none !important;
 }
 
-.loading-progress {
-    display: none;
-}
-
+.loading-progress,
 .loading-progress-text {
     display: none;
 }
 
-/* ========================================
-   MOBILE — RESPONSIVE
-======================================== */
+
+/* ============================================================
+   15. MOBILE — RESPONSIVE
+   Breakpoint: 768px and below
+   ============================================================ */
 @media (max-width: 768px) {
 
     /* Navbar */
     .navbar {
         padding: 1rem 1.5rem;
-        flex-wrap: wrap;
-        gap: 0.5rem;
     }
 
     .navbar-brand a {
         font-size: 1.1rem;
     }
 
-    .hamburger {
-        display: flex;
-    }
-
+    /* Dropdown goes full width on mobile */
     .navbar-links {
-        display: none;
         width: 100%;
-        flex-direction: column;
-        gap: 0;
-        background-color: var(--color-nav-items-bg);
-        padding: 0.5rem 0;
     }
-
-        .navbar-links.open {
-            display: flex;
-        }
-
-        .navbar-links a {
-            padding: 0.8rem 1.5rem;
-            border-top: 1px solid var(--color-nav-divider);
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-        }
 
     /* Hero */
     .hero {
@@ -1184,14 +1353,13 @@ main {
         max-height: 70px;
     }
 
-    .modal-thumb {
+    .modal-thumb,
+    .modal-thumb--video {
         width: 50px;
         height: 38px;
     }
 
     .modal-thumb--video {
-        width: 50px;
-        height: 38px;
         font-size: 1rem;
     }
 
@@ -1208,6 +1376,7 @@ main {
         font-size: 0.85rem;
     }
 
+    /* Mobile modal close — circular, fixed top-right */
     .modal-close {
         position: fixed;
         top: 0.5rem;
@@ -1221,10 +1390,4 @@ main {
         align-items: center;
         justify-content: center;
     }
-}
-.navbar-right {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-left: auto;
 }
