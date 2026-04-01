@@ -1,0 +1,63 @@
+﻿@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<button class="theme-toggle" @onclick="ToggleTheme" title="@(_isNight ? "Switch to Day" : "Switch to Night")">
+    <span class="theme-toggle__icon">@(_isNight ? "☀" : "☾")</span>
+</button>
+
+@code {
+    private bool _isNight = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var saved = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
+            _isNight = saved == "night";
+            await ApplyTheme();
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleTheme()
+    {
+        _isNight = !_isNight;
+        await ApplyTheme();
+        await JS.InvokeVoidAsync("localStorage.setItem", "theme", _isNight ? "night" : "day");
+    }
+
+    private async Task ApplyTheme()
+    {
+        var theme = _isNight ? "night" : "day";
+        await JS.InvokeVoidAsync("eval",
+            $"document.documentElement.setAttribute('data-theme', '{theme}')");
+    }
+
+    public async ValueTask DisposeAsync() { }
+}
+
+<style>
+    .theme-toggle {
+        background: transparent;
+        border: 1.5px solid var(--color-navbar-text);
+        color: var(--color-navbar-text);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s, border-color 0.2s;
+        flex-shrink: 0;
+    }
+
+    .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .theme-toggle__icon {
+        font-size: 16px;
+        line-height: 1;
+    }
+</style>
