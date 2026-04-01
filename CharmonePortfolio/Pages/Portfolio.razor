@@ -1,4 +1,5 @@
 @page "/portfolio"
+@inject IJSRuntime JS
 
 <PageTitle>Portfolio — Charmone Strauss</PageTitle>
 
@@ -125,8 +126,7 @@
                             @if (current.Type == MediaItemType.Video)
                             {
                                 <video controls autoplay
-                                       class="modal-main-video"
-                                       key="@current.Url">
+                                       class="modal-main-video">
                                     <source src="@current.Url" type="video/mp4" />
                                     Your browser does not support video.
                                 </video>
@@ -162,7 +162,7 @@
                                         int idx = i;
                                         var item = allMedia[i];
                                         <div class="modal-thumb-wrap @(CurrentImageIndex == idx ? "active" : "")"
-                                             @onclick="() => CurrentImageIndex = idx">
+                                             @onclick="() => SelectMedia(idx)">
                                             @if (item.Type == MediaItemType.Video)
                                             {
                                                 <div class="modal-thumb modal-thumb--video">🎬</div>
@@ -254,11 +254,11 @@
         public List<string>? Images { get; set; }
         public bool HasImages => Images != null && Images.Count > 0;
 
-        // Videos — now supports multiple
+        // Videos — supports multiple
         public List<string>? VideoUrls { get; set; }
         public bool HasVideo => VideoUrls != null && VideoUrls.Count > 0;
 
-        // Keep single VideoUrl for backwards compat
+        // Backwards compat single VideoUrl
         public string? VideoUrl
         {
             get => VideoUrls?.FirstOrDefault();
@@ -271,7 +271,7 @@
 
         public List<string>? Tags { get; set; }
 
-        // Returns all media in display order: videos first, then images
+        // Returns all media: videos first, then images
         public List<MediaItem> GetAllMedia()
         {
             var result = new List<MediaItem>();
@@ -480,12 +480,13 @@
     // ─── Modal State ───────────────────────────────────────────
     private Project? SelectedProject;
     private string? ZoomedImageUrl;
-    private int CurrentImageIndex = 0;
+    private int _currentImageIndex = 0;
+    private int CurrentImageIndex => _currentImageIndex;
 
     private void OpenModal(Project project)
     {
         SelectedProject = project;
-        CurrentImageIndex = 0;
+        _currentImageIndex = 0;
         ZoomedImageUrl = null;
     }
 
@@ -495,16 +496,36 @@
         ZoomedImageUrl = null;
     }
 
-    private void NextImage()
+    private async Task SelectMedia(int idx)
+    {
+        _currentImageIndex = idx;
+        StateHasChanged();
+
+        // If the selected item is a video, force the video element to reload
+        if (SelectedProject != null)
+        {
+            var media = SelectedProject.GetAllMedia();
+            if (idx < media.Count && media[idx].Type == MediaItemType.Video)
+            {
+                await Task.Delay(50); // let Blazor render the new src first
+                await JS.InvokeVoidAsync("eval",
+                    "var v = document.querySelector('.modal-main-video'); if(v){ v.pause(); v.load(); v.play().catch(()=>{}); }");
+            }
+        }
+    }
+
+    private async Task NextImage()
     {
         if (SelectedProject == null) return;
         var count = SelectedProject.GetAllMedia().Count;
-        if (CurrentImageIndex < count - 1) CurrentImageIndex++;
+        if (_currentImageIndex < count - 1)
+            await SelectMedia(_currentImageIndex + 1);
     }
 
-    private void PrevImage()
+    private async Task PrevImage()
     {
-        if (CurrentImageIndex > 0) CurrentImageIndex--;
+        if (_currentImageIndex > 0)
+            await SelectMedia(_currentImageIndex - 1);
     }
 
     private void OpenZoom(string imageUrl) => ZoomedImageUrl = imageUrl;

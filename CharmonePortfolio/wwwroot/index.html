@@ -100,6 +100,16 @@
         }
     </script>
 
+    <script>
+        window.reloadVideo = (element) => {
+            if (element) {
+                element.pause();
+                element.load();
+                element.play().catch(() => { });
+            }
+        }
+    </script>
+
 </body>
 
 </html>
