@@ -1,5 +1,7 @@
 @page "/portfolio"
+@using CharmonePortfolio.Services
 @inject IJSRuntime JS
+@inject SupabaseService Supabase
 
 <PageTitle>Portfolio — Charmone Strauss</PageTitle>
 
@@ -29,76 +31,87 @@
         </div>
     </section>
 
-    <!-- Project Grid -->
-    <section class="portfolio-grid-section">
-        <div class="portfolio-grid">
-            @foreach (var project in FilteredProjects)
-            {
-                <div class="project-card @(project.Featured ? "project-card--featured" : "")"
-                     @onclick="() => OpenModal(project)">
-                    <div class="project-card-image">
-                        @if (!string.IsNullOrEmpty(project.ThumbnailUrl))
-                        {
-                            <img src="@project.ThumbnailUrl" alt="@project.Title" loading="lazy" />
-                        }
-                        else
-                        {
-                            <div class="project-card-placeholder">
-                                <span class="placeholder-icon">🖼</span>
-                            </div>
-                        }
-                        @if (project.Featured)
-                        {
-                            <div class="featured-badge">Featured</div>
-                        }
-                        <div class="project-card-overlay">
-                            <span class="view-label">View Project</span>
-                        </div>
-                    </div>
-                    <div class="project-card-info">
-                        <span class="project-tag">@project.Category</span>
-                        <h3 class="project-card-title">@project.Title</h3>
-                        <p class="project-card-desc">@project.ShortDescription</p>
-                        <div class="project-card-meta">
-                            <span class="project-term">@project.Term</span>
-                            <div class="project-media-icons">
-                                @if (project.HasImages)
-                                {
-                                    <span title="Images">📷</span>
-                                }
-                                @if (project.HasVideo)
-                                {
-                                    <span title="Video">🎬</span>
-                                }
-                                @if (project.HasPdf)
-                                {
-                                    <span title="PDF">📄</span>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-
-            <!-- Coming Soon Placeholder Cards -->
-            @for (int i = 0; i < ComingSoonCount; i++)
-            {
-                <div class="project-card coming-soon">
-                    <div class="project-card-image">
-                        <div class="project-card-placeholder">
-                            <span class="placeholder-icon coming-soon-icon">✦</span>
-                            <span class="coming-soon-text">Coming Soon</span>
-                        </div>
-                    </div>
-                    <div class="project-card-info">
-                        <span class="project-tag">—</span>
-                        <h3 class="project-card-title">New Project</h3>
-                        <p class="project-card-desc">More work coming soon.</p>
-                    </div>
-                </div>
-            }
+    <!-- Loading state -->
+    @if (IsLoading)
+    {
+        <div style="text-align:center;padding:6rem 2rem;">
+            <p class="portfolio-eyebrow">Loading projects...</p>
         </div>
-    </section>
+    }
+    else
+    {
+        <!-- Project Grid -->
+        <section class="portfolio-grid-section">
+            <div class="portfolio-grid">
+                @foreach (var project in FilteredProjects)
+                {
+                    <div class="project-card @(project.Featured ? "project-card--featured" : "")"
+                         @onclick="() => OpenModal(project)">
+                        <div class="project-card-image">
+                            @if (!string.IsNullOrEmpty(project.Thumbnail))
+                            {
+                                <img src="@(project.Folder + project.Thumbnail)"
+                                     alt="@project.Title" loading="lazy" />
+                            }
+                            else
+                            {
+                                <div class="project-card-placeholder">
+                                    <span class="placeholder-icon">🖼</span>
+                                </div>
+                            }
+                            @if (project.Featured)
+                            {
+                                <div class="featured-badge">Featured</div>
+                            }
+                            <div class="project-card-overlay">
+                                <span class="view-label">View Project</span>
+                            </div>
+                        </div>
+                        <div class="project-card-info">
+                            <span class="project-tag">@project.Category</span>
+                            <h3 class="project-card-title">@project.Title</h3>
+                            <p class="project-card-desc">@project.Description</p>
+                            <div class="project-card-meta">
+                                <span class="project-term">@project.Term</span>
+                                <div class="project-media-icons">
+                                    @if (project.Images?.Count > 0)
+                                    {
+                                        <span title="Images">📷</span>
+                                    }
+                                    @if (project.VideoUrls?.Count > 0)
+                                    {
+                                        <span title="Video">🎬</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(project.PdfUrl))
+                                    {
+                                        <span title="PDF">📄</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Coming Soon Placeholders -->
+                @for (int i = 0; i < ComingSoonCount; i++)
+                {
+                    <div class="project-card coming-soon">
+                        <div class="project-card-image">
+                            <div class="project-card-placeholder">
+                                <span class="placeholder-icon coming-soon-icon">✦</span>
+                                <span class="coming-soon-text">Coming Soon</span>
+                            </div>
+                        </div>
+                        <div class="project-card-info">
+                            <span class="project-tag">—</span>
+                            <h3 class="project-card-title">New Project</h3>
+                            <p class="project-card-desc">More work coming soon.</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
 
 </div>
 
@@ -115,18 +128,16 @@
                 <!-- Media Section -->
                 <div class="modal-media">
                     @{
-                        var allMedia = SelectedProject.GetAllMedia();
+                        var allMedia = GetAllMedia(SelectedProject);
                     }
                     @if (allMedia.Count > 0)
                     {
                         var current = allMedia[CurrentImageIndex];
-
                         <div class="modal-image-viewer">
 
                             @if (current.Type == MediaItemType.Video)
                             {
-                                <video controls autoplay
-                                       class="modal-main-video">
+                                <video controls autoplay class="modal-main-video">
                                     <source src="@current.Url" type="video/mp4" />
                                     Your browser does not support video.
                                 </video>
@@ -134,7 +145,7 @@
                             else
                             {
                                 <img src="@current.Url"
-                                     alt="@SelectedProject.Title image @(CurrentImageIndex + 1)"
+                                     alt="@SelectedProject.Title"
                                      class="modal-main-image"
                                      @onclick="() => OpenZoom(current.Url)"
                                      @onclick:stopPropagation="true" />
@@ -169,9 +180,7 @@
                                             }
                                             else
                                             {
-                                                <img src="@item.Url"
-                                                     alt="Thumbnail @(i + 1)"
-                                                     class="modal-thumb" />
+                                                <img src="@item.Url" alt="Thumb @(i + 1)" class="modal-thumb" />
                                             }
                                         </div>
                                     }
@@ -193,16 +202,17 @@
                     <span class="modal-tag">@SelectedProject.Category</span>
                     <h2 class="modal-title">@SelectedProject.Title</h2>
                     <p class="modal-term">@SelectedProject.Term</p>
-                    <p class="modal-description">@SelectedProject.FullDescription</p>
+                    <p class="modal-description">@SelectedProject.Description</p>
 
-                    @if (SelectedProject.HasPdf && !string.IsNullOrEmpty(SelectedProject.PdfUrl))
+                    @if (!string.IsNullOrEmpty(SelectedProject.PdfUrl))
                     {
-                        <a href="@SelectedProject.PdfUrl" target="_blank" class="modal-pdf-btn">
+                        <a href="@(SelectedProject.Folder + SelectedProject.PdfUrl)"
+                               target="_blank" class="modal-pdf-btn">
                             📄 View PDF Document
                         </a>
                     }
 
-                    @if (SelectedProject.Tags != null && SelectedProject.Tags.Count > 0)
+                    @if (SelectedProject.Tags?.Count > 0)
                     {
                         <div class="modal-tags">
                             @foreach (var tag in SelectedProject.Tags)
@@ -223,249 +233,47 @@
 {
     <div class="zoom-overlay" @onclick="CloseZoom">
         <button class="zoom-close" @onclick="CloseZoom" @onclick:stopPropagation="true">✕</button>
-        <img src="@ZoomedImageUrl" alt="Zoomed image" @onclick:stopPropagation="true" />
+        <img src="@ZoomedImageUrl" alt="Zoomed" @onclick:stopPropagation="true" />
     </div>
 }
 
 @code {
 
-    // ─── Media Types ───────────────────────────────────────────
+    // ─── Media types ───────────────────────────────────────────
     private enum MediaItemType { Image, Video }
 
     private class MediaItem
     {
-        public MediaItemType Type { get; set; } = MediaItemType.Image;
+        public MediaItemType Type { get; set; }
         public string Url { get; set; } = "";
-        public string? Caption { get; set; }
     }
 
-    // ─── Data Model ────────────────────────────────────────────
-    private class Project
+    // Builds ordered media list: videos first, then images
+    // Prefixes each filename with the project folder path
+    private List<MediaItem> GetAllMedia(Project p)
     {
-        public string Title { get; set; } = "";
-        public string ShortDescription { get; set; } = "";
-        public string FullDescription { get; set; } = "";
-        public string Category { get; set; } = "";
-        public string Term { get; set; } = "";
-        public bool Featured { get; set; } = false;
-        public string? ThumbnailUrl { get; set; }
+        var result = new List<MediaItem>();
+        var folder = p.Folder ?? "";
 
-        // Images
-        public List<string>? Images { get; set; }
-        public bool HasImages => Images != null && Images.Count > 0;
+        if (p.VideoUrls != null)
+            foreach (var v in p.VideoUrls)
+                result.Add(new MediaItem { Type = MediaItemType.Video, Url = folder + v });
 
-        // Videos — supports multiple
-        public List<string>? VideoUrls { get; set; }
-        public bool HasVideo => VideoUrls != null && VideoUrls.Count > 0;
+        if (p.Images != null)
+            foreach (var img in p.Images)
+                result.Add(new MediaItem { Type = MediaItemType.Image, Url = folder + img });
 
-        // Backwards compat single VideoUrl
-        public string? VideoUrl
-        {
-            get => VideoUrls?.FirstOrDefault();
-            set { if (value != null) VideoUrls = new List<string> { value }; }
-        }
-
-        // PDF
-        public bool HasPdf { get; set; }
-        public string? PdfUrl { get; set; }
-
-        public List<string>? Tags { get; set; }
-
-        // Returns all media: videos first, then images
-        public List<MediaItem> GetAllMedia()
-        {
-            var result = new List<MediaItem>();
-            if (VideoUrls != null)
-                foreach (var v in VideoUrls)
-                    result.Add(new MediaItem { Type = MediaItemType.Video, Url = v });
-            if (Images != null)
-                foreach (var img in Images)
-                    result.Add(new MediaItem { Type = MediaItemType.Image, Url = img });
-            return result;
-        }
+        return result;
     }
 
-    // ─── Project Data ──────────────────────────────────────────
-    private List<Project> AllProjects = new()
+    // ─── State ─────────────────────────────────────────────────
+    private List<Project> AllProjects = new();
+    private bool IsLoading = true;
+
+    private List<string> Filters = new()
     {
-        // ── 1. FEATURED — Corporate Identity ──────────────────
-        new Project
-        {
-            Title            = "Corporate Identity: Penguin Random House",
-            ShortDescription = "Two logo animations for Penguin Random House built in Adobe After Effects, with branded merchandise mockups — the full corporate identity package.",
-            FullDescription  = "A full corporate identity project for Penguin Random House, including two logo animations built in Adobe After Effects and branded merchandise mockups. " +
-                               "Animation 1 uses a quill that draws a line before the Penguin logo builds itself on screen using trim paths. " +
-                               "Animation 2 uses a domino book-fall sequence with the Penguin logo emerging and settling into frame, title typing in beside it. " +
-                               "Principles applied include anticipation, squash & stretch, ease in/out, follow-through, and staging. " +
-                               "The project also includes branded mug mockups and tote bag mockups carrying the Penguin Random House identity.",
-            Category         = "Motion Design",
-            Term             = "Term 3, 2025",
-            Featured         = true,
-            ThumbnailUrl     = "portfolio/ds-p2-t3/thumb.jpg",
-            VideoUrls        = new List<string>
-            {
-                "portfolio/ds-p2-t3/animation-1.mp4",
-                "portfolio/ds-p2-t3/animation-2.mp4",
-            },
-            Images           = new List<string>
-            {
-                "portfolio/ds-p2-t3/storyboard-anim1.jpg",
-                "portfolio/ds-p2-t3/storyboard-anim2.jpg",
-                "portfolio/ds-p2-t3/medium-fidelity.jpg",
-                "portfolio/ds-p2-t3/high-fidelity.jpg",
-                "portfolio/ds-p2-t3/process-1.jpg",
-                "portfolio/ds-p2-t3/process-2.jpg",
-                "portfolio/ds-p2-t3/mug-mockup-1.jpg",
-                "portfolio/ds-p2-t3/mug-mockup-2.jpg",
-                "portfolio/ds-p2-t3/tote-front.jpg",
-                "portfolio/ds-p2-t3/tote-back.jpg",
-            },
-            HasPdf           = true,
-            PdfUrl           = "portfolio/ds-p2-t3/DS_P2_T3_Submission.pdf",
-            Tags             = new List<string> { "Motion Design", "After Effects", "Logo Animation", "Corporate Identity", "Merchandise", "Penguin Random House", "Design Studio" },
-        },
-
-        // ── 2. Bauhaus Pop-Up Book ─────────────────────────────
-        new Project
-        {
-            Title            = "Bauhaus Pop-Up Book — Design Studio",
-            ShortDescription = "A hand-crafted pop-up book with 5 spreads, each representing a design discipline reimagined in Bauhaus style through paper engineering, colour, and mechanical ingenuity.",
-            FullDescription  = "This Design Studio project for the Higher Certificate in Design Thinking challenged each discipline of design to be expressed through a Bauhaus-styled pop-up book spread. " +
-                               "Each of the 5 spreads followed the same rigorous process: mind map and planning, mechanism study, prototyping, and a photographed final. " +
-                               "Spread 01 — Graphic Design — features a colour wheel, Bauhaus typography spiralled to spell 'BAUHAUS', and a running man chased by design elements, all in bold yellow and black. " +
-                               "Spread 02 — Multimedia Design — uses v-folds and parallel folds to launch a rocket ship surrounded by app logos, a camera, globe, lightbulb, and pencil against a deep red and black base. " +
-                               "Spread 03 — Interior Design — recreates the Farnsworth House interior with Bauhaus textile patterns, Mondrian-influenced colour blocking in blue, red, and yellow, and a landscape window backdrop. " +
-                               "Spread 04 — 3D Animation — is a Bauhaus-styled recreation of the house from the film Up, complete with balloons, Carl's chair, the scout pin, and a mailbox. " +
-                               "Spread 05 — 2D Animation — stages the Triadic Ballet with pull-tab curtains, a sliding dancer mechanism, and a circular background element, in dramatic red and black.",
-            Category         = "Mixed Media",
-            Term             = "Term 1, 2025",
-            ThumbnailUrl     = "portfolio/ds-p2/thumb.jpg",
-            Images           = new List<string>
-            {
-                "portfolio/ds-p2/spread4-final-front.jpg",
-                "portfolio/ds-p2/spread4-final-top.jpg",
-                "portfolio/ds-p2/spread5-final-front.jpg",
-                "portfolio/ds-p2/spread3-final-front.jpg",
-                "portfolio/ds-p2/spread3-final-top.jpg",
-                "portfolio/ds-p2/spread2-final-front.jpg",
-                "portfolio/ds-p2/spread1-final-front.jpg",
-                "portfolio/ds-p2/spread1-final-top.jpg",
-            },
-            HasPdf           = true,
-            PdfUrl           = "portfolio/ds-p2/DS_P2_Submission.pdf",
-            Tags             = new List<string> { "Pop-Up Book", "Paper Engineering", "Bauhaus", "Book Design", "Design Studio", "Mixed Media", "3D Construction" },
-        },
-
-        // ── 3. Homo-Cubis ──────────────────────────────────────
-        new Project
-        {
-            Title            = "Homo-Cubis — Design Studio",
-            ShortDescription = "A 4-week mixed-media project exploring personal identity through hand-crafted geometric paper forms, original character design, and a final 3D paper-engineered figure.",
-            FullDescription  = "This Design Studio project for the Higher Certificate in Design Thinking used paper engineering and illustration to explore identity and character through geometric form. " +
-                               "Week 1 began with a paper plane exercise followed by the hand-construction of 9 geometric solids — cube, cone, cuboid, cylinder, hexagonal pyramid, hexagonal prism, dodecahedron, icosahedron, tetrahedron, triangular prism, and octahedron — each photographed in a DIY studio setup with process shots. " +
-                               "Week 2 produced 10 original character ideation sketches drawn from personal traits and archetypes: the alien, bookworm, dreamer, creative, cupid, anger, emotional, movie lover, inner child, and Princess Belle. " +
-                               "Week 3 refined three of these characters into fully proportioned, coloured illustrations. " +
-                               "Week 4 brought the cloud-dreamer character to life as a final 3D paper-engineered sculpture, photographed from the front, back, and three-quarter views in a controlled studio environment.",
-            Category         = "Mixed Media",
-            Term             = "Term 1, 2025",
-            ThumbnailUrl     = "portfolio/ds-p1/thumb.jpg",
-            Images           = new List<string>
-            {
-                "portfolio/ds-p1/character-final-front.jpg",
-                "portfolio/ds-p1/character-final-back.jpg",
-                "portfolio/ds-p1/character-final-threequarter.jpg",
-                "portfolio/ds-p1/characters-refined-colour.jpg",
-                "portfolio/ds-p1/character-sketches.jpg",
-                "portfolio/ds-p1/geometric-forms.jpg",
-                "portfolio/ds-p1/geometric-forms-process.jpg",
-            },
-            HasPdf           = true,
-            PdfUrl           = "portfolio/ds-p1/DS_P1_Submission.pdf",
-            Tags             = new List<string> { "Paper Engineering", "Character Design", "3D Construction", "Illustration", "Design Studio", "Identity", "Geometric Forms" },
-        },
-
-        // ── 4. Perspective ─────────────────────────────────────
-        new Project
-        {
-            Title            = "Perspective — Visual Communication",
-            ShortDescription = "A 4-week technical drawing portfolio covering one-point and two-point perspective, mark-making, texture studies, and geometric form construction in pencil.",
-            FullDescription  = "This Visual Communication project for the Higher Certificate in Design Thinking built foundational drawing skills across four weeks of structured exercises. " +
-                               "Week 1 introduced one-point perspective through warm-up drawings and three progressive attempts at rendering 'CHARMONE' in bold block letters converging to a single vanishing point, culminating in a clean final with construction lines removed. " +
-                               "Week 2 focused on mark-making: warm-up exercises were followed by a large texture block sheet exploring over 16 distinct pencil textures — hatching, crosshatching, stippling, spirals, contour lines, and grids. " +
-                               "The week concluded with a final version of 'CHARMONE' in one-point perspective with a unique hand-drawn texture applied to each letter. " +
-                               "Weeks 3 and 4 tackled two-point perspective across six geometric forms — boxes, cylinders, cones, pyramids, spheres, and triangular prisms — each with a first attempt and a shaded final. " +
-                               "Three combination drawings brought multiple forms together with full shading and cast shadows, demonstrating growing confidence with spatial reasoning and pencil technique.",
-            Category         = "Graphic Design",
-            Term             = "Term 1, 2025",
-            ThumbnailUrl     = "portfolio/vc-p1/thumb.jpg",
-            Images           = new List<string>
-            {
-                "portfolio/vc-p1/charmone-texture-final.jpg",
-                "portfolio/vc-p1/charmone-perspective-final.jpg",
-                "portfolio/vc-p1/combination-drawing-3.jpg",
-                "portfolio/vc-p1/combination-drawing-2.jpg",
-                "portfolio/vc-p1/texture-blocks.jpg",
-                "portfolio/vc-p1/sphere-final.jpg",
-                "portfolio/vc-p1/pyramid-final.jpg",
-            },
-            HasPdf           = true,
-            PdfUrl           = "portfolio/vc-p1/VC_P1_Submission.pdf",
-            Tags             = new List<string> { "Technical Drawing", "Perspective", "Mark Making", "Texture", "Visual Communication", "Pencil", "Geometric Forms" },
-        },
-
-        // ── 5. Lego: Folklore ──────────────────────────────────
-        new Project
-        {
-            Title            = "Lego: Folklore — Design Studio",
-            ShortDescription = "A linocut printmaking project for a fictional LEGO African folklore pop-up store, hand-carved and printed onto paper and fabric.",
-            FullDescription  = "This Design Studio project for the Higher Certificate in Design Thinking used linocut printmaking to explore African folklore through a fictional LEGO branded store concept. " +
-                               "Charmone researched the Cape Malay folktale 'Van Hunks and the Devil' — a legend set on Devil's Peak in Cape Town — and developed a composition inspired by its characters and themes. " +
-                               "The design process moved from initial sketches on paper, selecting a final composition, carving the design into a rubber mat using lino tools, to inking and pressing the block onto both paper and fabric. " +
-                               "The result is a hand-printed poster mounted on black board and a hand-printed T-shirt, both carrying the same carved design — demonstrating the printmaking process from concept to final wearable product.",
-            Category         = "Mixed Media",
-            Term             = "Term 2, 2025",
-            ThumbnailUrl     = "portfolio/ds-p1-t2/thumb.jpg",
-            Images           = new List<string>
-            {
-                "portfolio/ds-p1-t2/poster-final.jpg",
-                "portfolio/ds-p1-t2/lino-carving.jpg",
-                "portfolio/ds-p1-t2/test-print-yellow.jpg",
-                "portfolio/ds-p1-t2/shirt-back.jpg",
-                "portfolio/ds-p1-t2/shirt-front-modelled.jpg",
-            },
-            HasPdf           = true,
-            PdfUrl           = "portfolio/ds-p1-t2/DS_P1_T2_Submission.pdf",
-            Tags             = new List<string> { "Linocut", "Printmaking", "Folklore", "T-Shirt Design", "Poster Design", "Design Studio", "Mixed Media", "Lego" },
-        },
-
-        // ── 6. Head Structure ──────────────────────────────────
-        new Project
-        {
-            Title            = "Head Structure — Visual Communication",
-            ShortDescription = "A 4-week portrait drawing project exploring skull anatomy, facial planes, and portrait construction using the Loomis and Riley methods.",
-            FullDescription  = "This Visual Communication project for the Higher Certificate in Design Thinking built foundational portrait drawing skills through structured weekly exercises. " +
-                               "Week 1 focused on head structure through Loomis skull warm-ups — continuous line drawing, non-dominant hand, and drawing without looking — followed by fully constructed Loomis skulls from the right, left, and front views, each with a process and final drawing. " +
-                               "Week 2 moved into exploring facial planes and angles using the combined Loomis and Riley method, working from reference photos to produce three portrait studies at different angles — front, three-quarter, and profile. " +
-                               "Week 4 brought everything together in a comprehensive final portrait study: a structured process drawing working out proportions and placement, refined into a complete pencil portrait demonstrating confident use of hatching for shading and growing command of facial proportion.",
-            Category         = "Graphic Design",
-            Term             = "Term 2, 2025",
-            ThumbnailUrl     = "portfolio/vc-p2/thumb.jpg",
-            Images           = new List<string>
-            {
-                "portfolio/vc-p2/portrait-final.jpg",
-                "portfolio/vc-p2/portrait-process.jpg",
-                "portfolio/vc-p2/loomis-riley-all-three.jpg",
-                "portfolio/vc-p2/loomis-skull-final.jpg",
-                "portfolio/vc-p2/warmup-skulls.jpg",
-            },
-            HasPdf           = true,
-            PdfUrl           = "portfolio/vc-p2/VC_P2_Submission.pdf",
-            Tags             = new List<string> { "Portrait Drawing", "Loomis Method", "Riley Method", "Head Structure", "Pencil", "Visual Communication", "Observational Drawing" },
-        },
+        "All", "Motion Design", "Mixed Media", "Graphic Design", "Photography"
     };
-
-    // ─── Filters ───────────────────────────────────────────────
-    private List<string> Filters = new() { "All", "Motion Design", "Mixed Media", "Graphic Design", "Photography" };
     private string ActiveFilter = "All";
 
     private IEnumerable<Project> FilteredProjects =>
@@ -475,9 +283,20 @@
 
     private int ComingSoonCount => Math.Max(0, 3 - FilteredProjects.Count());
 
-    private void SetFilter(string filter) => ActiveFilter = filter;
+    private void SetFilter(string filter)
+    {
+        ActiveFilter = filter;
+        CloseModal();
+    }
 
-    // ─── Modal State ───────────────────────────────────────────
+    // ─── Load from Supabase ────────────────────────────────────
+    protected override async Task OnInitializedAsync()
+    {
+        AllProjects = await Supabase.GetProjectsAsync();
+        IsLoading = false;
+    }
+
+    // ─── Modal ─────────────────────────────────────────────────
     private Project? SelectedProject;
     private string? ZoomedImageUrl;
     private int _currentImageIndex = 0;
@@ -501,13 +320,12 @@
         _currentImageIndex = idx;
         StateHasChanged();
 
-        // If the selected item is a video, force the video element to reload
         if (SelectedProject != null)
         {
-            var media = SelectedProject.GetAllMedia();
+            var media = GetAllMedia(SelectedProject);
             if (idx < media.Count && media[idx].Type == MediaItemType.Video)
             {
-                await Task.Delay(50); // let Blazor render the new src first
+                await Task.Delay(50);
                 await JS.InvokeVoidAsync("eval",
                     "var v = document.querySelector('.modal-main-video'); if(v){ v.pause(); v.load(); v.play().catch(()=>{}); }");
             }
@@ -517,7 +335,7 @@
     private async Task NextImage()
     {
         if (SelectedProject == null) return;
-        var count = SelectedProject.GetAllMedia().Count;
+        var count = GetAllMedia(SelectedProject).Count;
         if (_currentImageIndex < count - 1)
             await SelectMedia(_currentImageIndex + 1);
     }
@@ -528,6 +346,6 @@
             await SelectMedia(_currentImageIndex - 1);
     }
 
-    private void OpenZoom(string imageUrl) => ZoomedImageUrl = imageUrl;
+    private void OpenZoom(string url) => ZoomedImageUrl = url;
     private void CloseZoom() => ZoomedImageUrl = null;
 }
