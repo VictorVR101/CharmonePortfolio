@@ -1,0 +1,554 @@
+﻿@page "/admin/dashboard"
+@using CharmonePortfolio.Services
+@inject SupabaseService Supabase
+@inject NavigationManager Nav
+
+@if (!Supabase.IsAuthenticated)
+{
+    Nav.NavigateTo("/admin");
+    return;
+}
+
+<div class="admin-page">
+
+    <!-- Header -->
+    <div class="admin-header">
+        <div>
+            <p class="admin-eyebrow">Admin Dashboard</p>
+            <h1 class="admin-title">Projects</h1>
+        </div>
+        <div style="display:flex;gap:1rem;align-items:center;">
+            <button class="btn-primary" @onclick="ShowAddForm">+ Add Project</button>
+            <button class="btn-outline" @onclick="Logout">Sign Out</button>
+        </div>
+    </div>
+
+    <!-- Status message -->
+    @if (!string.IsNullOrEmpty(StatusMessage))
+    {
+        <div class="admin-status @(StatusIsError ? "status-error" : "status-success")">
+            @StatusMessage
+        </div>
+    }
+
+    <!-- Add / Edit Form -->
+    @if (ShowForm)
+    {
+        <div class="admin-form-wrap">
+            <h2 class="admin-form-title">@(EditingProject?.Id == null ? "Add New Project" : "Edit Project")</h2>
+
+            <div class="admin-form-grid">
+
+                <!-- Title -->
+                <div class="form-group admin-full">
+                    <label class="form-label">Title *</label>
+                    <input class="form-input" @bind="Form.Title" placeholder="e.g. Bauhaus Pop-Up Book" />
+                </div>
+
+                <!-- Subject -->
+                <div class="form-group">
+                    <label class="form-label">Subject</label>
+                    <select class="form-input form-select" @bind="Form.Subject">
+                        <option value="">Select subject</option>
+                        <option value="Design Studio">Design Studio</option>
+                        <option value="Visual Communication">Visual Communication</option>
+                    </select>
+                </div>
+
+                <!-- Category -->
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-input form-select" @bind="Form.Category">
+                        <option value="">Select category</option>
+                        <option value="Mixed Media">Mixed Media</option>
+                        <option value="Graphic Design">Graphic Design</option>
+                        <option value="Motion Design">Motion Design</option>
+                        <option value="Photography">Photography</option>
+                    </select>
+                </div>
+
+                <!-- Term -->
+                <div class="form-group">
+                    <label class="form-label">Term</label>
+                    <select class="form-input form-select" @bind="Form.Term">
+                        <option value="">Select term</option>
+                        <option value="Term 1">Term 1</option>
+                        <option value="Term 2">Term 2</option>
+                        <option value="Term 3">Term 3</option>
+                        <option value="Term 4">Term 4</option>
+                    </select>
+                </div>
+
+                <!-- Folder -->
+                <div class="form-group">
+                    <label class="form-label">Folder path</label>
+                    <input class="form-input" @bind="Form.Folder" placeholder="portfolio/ds-p1/" />
+                </div>
+
+                <!-- Thumbnail -->
+                <div class="form-group admin-full">
+                    <label class="form-label">Thumbnail filename</label>
+                    <input class="form-input" @bind="Form.Thumbnail" placeholder="thumb.jpg" />
+                </div>
+
+                <!-- Images -->
+                <div class="form-group admin-full">
+                    <label class="form-label">Image filenames (one per line)</label>
+                    <textarea class="form-input form-textarea"
+                              @bind="ImagesText"
+                              placeholder="image-1.jpg&#10;image-2.jpg&#10;image-3.jpg"></textarea>
+                    <p class="admin-hint">One filename per line. They will be prefixed with the folder path automatically.</p>
+                </div>
+
+                <!-- Videos -->
+                <div class="form-group admin-full">
+                    <label class="form-label">Video filenames (one per line, optional)</label>
+                    <textarea class="form-input form-textarea"
+                              style="min-height:80px"
+                              @bind="VideosText"
+                              placeholder="animation-1.mp4&#10;animation-2.mp4"></textarea>
+                </div>
+
+                <!-- PDF -->
+                <div class="form-group admin-full">
+                    <label class="form-label">PDF filename (optional)</label>
+                    <input class="form-input" @bind="Form.PdfUrl" placeholder="submission.pdf" />
+                </div>
+
+                <!-- Tags -->
+                <div class="form-group admin-full">
+                    <label class="form-label">Tags (comma separated)</label>
+                    <input class="form-input" @bind="TagsText" placeholder="Illustration, Typography, Branding" />
+                </div>
+
+                <!-- Description -->
+                <div class="form-group admin-full">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-input form-textarea" @bind="Form.Description"
+                              placeholder="Brief description of the project..."></textarea>
+                </div>
+
+                <!-- Sort order + Featured -->
+                <div class="form-group">
+                    <label class="form-label">Sort order (lower = first)</label>
+                    <input class="form-input" type="number" @bind="Form.SortOrder" />
+                </div>
+
+                <div class="form-group" style="justify-content:flex-end;padding-bottom:0.5rem;">
+                    <label class="admin-checkbox-label">
+                        <input type="checkbox" @bind="Form.Featured" />
+                        <span>Featured project (gold border)</span>
+                    </label>
+                </div>
+
+            </div>
+
+            <!-- Form actions -->
+            <div class="admin-form-actions">
+                <button class="btn-primary" @onclick="SaveProjectAsync" disabled="@IsSaving">
+                    @(IsSaving ? "Saving..." : (EditingProject?.Id == null ? "Add Project" : "Save Changes"))
+                </button>
+                <button class="btn-outline" @onclick="CancelForm">Cancel</button>
+            </div>
+        </div>
+    }
+
+    <!-- Projects table -->
+    @if (IsLoading)
+    {
+        <p class="admin-loading">Loading projects...</p>
+    }
+    else if (Projects.Count == 0)
+    {
+        <p class="admin-empty">No projects yet. Click "Add Project" to get started.</p>
+    }
+    else
+    {
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Title</th>
+                        <th>Subject</th>
+                        <th>Category</th>
+                        <th>Term</th>
+                        <th>Featured</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Projects)
+                    {
+                        <tr>
+                            <td>@p.SortOrder</td>
+                            <td><strong>@p.Title</strong></td>
+                            <td>@p.Subject</td>
+                            <td>@p.Category</td>
+                            <td>@p.Term</td>
+                            <td>@(p.Featured ? "⭐" : "—")</td>
+                            <td>
+                                <div style="display:flex;gap:0.5rem;">
+                                    <button class="admin-btn-edit" @onclick="() => EditProject(p)">Edit</button>
+                                    <button class="admin-btn-delete" @onclick="() => DeleteProjectAsync(p)">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+</div>
+
+@code {
+    private List<Project> Projects = new();
+    private bool IsLoading = true;
+    private bool IsSaving = false;
+    private bool ShowForm = false;
+    private string StatusMessage = "";
+    private bool StatusIsError = false;
+
+    // Form state
+    private Project Form = new();
+    private Project? EditingProject;
+    private string ImagesText = "";
+    private string VideosText = "";
+    private string TagsText = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProjectsAsync();
+    }
+
+    private async Task LoadProjectsAsync()
+    {
+        IsLoading = true;
+        Projects = await Supabase.GetProjectsAsync();
+        IsLoading = false;
+    }
+
+    private void ShowAddForm()
+    {
+        Form = new Project();
+        EditingProject = new Project(); // no Id = new
+        ImagesText = "";
+        VideosText = "";
+        TagsText = "";
+        ShowForm = true;
+        StatusMessage = "";
+    }
+
+    private void EditProject(Project p)
+    {
+        EditingProject = p;
+        Form = new Project
+        {
+            Id = p.Id,
+            Title = p.Title,
+            Description = p.Description,
+            Subject = p.Subject,
+            Category = p.Category,
+            Term = p.Term,
+            Folder = p.Folder,
+            Thumbnail = p.Thumbnail,
+            Images = new List<string>(p.Images),
+            VideoUrls = new List<string>(p.VideoUrls),
+            PdfUrl = p.PdfUrl,
+            Tags = new List<string>(p.Tags),
+            Featured = p.Featured,
+            SortOrder = p.SortOrder
+        };
+        ImagesText = string.Join("\n", p.Images);
+        VideosText = string.Join("\n", p.VideoUrls);
+        TagsText = string.Join(", ", p.Tags);
+        ShowForm = true;
+        StatusMessage = "";
+    }
+
+    private void CancelForm()
+    {
+        ShowForm = false;
+        EditingProject = null;
+    }
+
+    private async Task SaveProjectAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Form.Title))
+        {
+            SetStatus("Title is required.", true);
+            return;
+        }
+
+        IsSaving = true;
+
+        // Parse text areas into lists
+        Form.Images = ImagesText
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .Where(s => !string.IsNullOrEmpty(s))
+            .ToList();
+
+        Form.VideoUrls = VideosText
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .Where(s => !string.IsNullOrEmpty(s))
+            .ToList();
+
+        Form.Tags = TagsText
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim())
+            .Where(s => !string.IsNullOrEmpty(s))
+            .ToList();
+
+        bool success;
+
+        if (string.IsNullOrEmpty(Form.Id))
+            success = await Supabase.CreateProjectAsync(Form);
+        else
+            success = await Supabase.UpdateProjectAsync(Form);
+
+        if (success)
+        {
+            SetStatus(Form.Id == null ? "Project added!" : "Project updated!", false);
+            ShowForm = false;
+            await LoadProjectsAsync();
+        }
+        else
+        {
+            SetStatus("Something went wrong. Please try again.", true);
+        }
+
+        IsSaving = false;
+    }
+
+    private async Task DeleteProjectAsync(Project p)
+    {
+        if (string.IsNullOrEmpty(p.Id)) return;
+
+        var success = await Supabase.DeleteProjectAsync(p.Id);
+        if (success)
+        {
+            SetStatus($"'{p.Title}' deleted.", false);
+            await LoadProjectsAsync();
+        }
+        else
+        {
+            SetStatus("Could not delete project.", true);
+        }
+    }
+
+    private void SetStatus(string msg, bool isError)
+    {
+        StatusMessage = msg;
+        StatusIsError = isError;
+    }
+
+    private void Logout()
+    {
+        Supabase.Logout();
+        Nav.NavigateTo("/");
+    }
+}
+
+<style>
+    .admin-page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 3rem 2rem 6rem;
+    }
+
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 2.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .admin-eyebrow {
+        font-size: 0.7rem;
+        letter-spacing: 4px;
+        color: var(--color-gold);
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+
+    .admin-title {
+        font-size: 3.5rem;
+        font-weight: 400;
+        color: var(--color-accent);
+        line-height: 1;
+        letter-spacing: -1px;
+    }
+
+    .admin-status {
+        padding: 0.75rem 1rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+        border-left: 3px solid currentColor;
+    }
+
+    /* ── Form ── */
+    .admin-form-wrap {
+        background-color: var(--color-card);
+        border: 1px solid var(--color-border);
+        padding: 2rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .admin-form-title {
+        font-size: 1.4rem;
+        font-weight: 400;
+        color: var(--color-accent);
+        margin-bottom: 1.5rem;
+    }
+
+    .admin-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.2rem;
+    }
+
+    .admin-full {
+        grid-column: 1 / -1;
+    }
+
+    .form-select {
+        cursor: pointer;
+    }
+
+    .admin-hint {
+        font-size: 0.75rem;
+        color: var(--color-text-secondary);
+        margin-top: 0.4rem;
+        letter-spacing: 0.5px;
+    }
+
+    .admin-checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.85rem;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        padding-top: 1.8rem;
+    }
+
+        .admin-checkbox-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--color-accent);
+            cursor: pointer;
+        }
+
+    .admin-form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--color-border);
+    }
+
+    /* ── Table ── */
+    .admin-table-wrap {
+        overflow-x: auto;
+    }
+
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+        .admin-table th {
+            text-align: left;
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--color-gold);
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .admin-table td {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid var(--color-border);
+            color: var(--color-text-secondary);
+            vertical-align: middle;
+        }
+
+        .admin-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .admin-table tr:hover td {
+            background-color: var(--color-surface);
+        }
+
+        .admin-table strong {
+            color: var(--color-text-primary);
+        }
+
+    .admin-btn-edit {
+        background: transparent;
+        border: 1px solid var(--color-gold);
+        color: var(--color-gold);
+        padding: 0.3rem 0.8rem;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: Georgia, serif;
+    }
+
+        .admin-btn-edit:hover {
+            background-color: var(--color-gold);
+            color: #fff;
+        }
+
+    .admin-btn-delete {
+        background: transparent;
+        border: 1px solid var(--color-accent);
+        color: var(--color-accent);
+        padding: 0.3rem 0.8rem;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: Georgia, serif;
+    }
+
+        .admin-btn-delete:hover {
+            background-color: var(--color-accent);
+            color: var(--color-navbar-text);
+        }
+
+    .admin-loading,
+    .admin-empty {
+        text-align: center;
+        padding: 4rem;
+        color: var(--color-text-secondary);
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+    }
+
+    @@media (max-width: 768px) {
+        .admin-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .admin-full {
+            grid-column: 1;
+        }
+
+        .admin-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>

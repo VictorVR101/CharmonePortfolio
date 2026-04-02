@@ -1,4 +1,7 @@
-﻿<nav class="navbar">
+﻿@using CharmonePortfolio.Services
+@inject SupabaseService Supabase
+
+<nav class="navbar">
     <div class="navbar-brand">
         <a href="/">Charmone Strauss</a>
     </div>
@@ -17,6 +20,12 @@
         <a href="/about" @onclick="CloseMenu">About</a>
         <a href="/portfolio" @onclick="CloseMenu">Portfolio</a>
         <a href="/contact" @onclick="CloseMenu">Contact</a>
+        <!-- Admin link — always visible in dropdown, goes to login or dashboard -->
+        <a href="@(Supabase.IsAuthenticated ? "/admin/dashboard" : "/admin")"
+               @onclick="CloseMenu"
+               class="nav-admin-link">
+            @(Supabase.IsAuthenticated ? "Dashboard" : "Admin")
+        </a>
     </div>
 </nav>
 
@@ -26,3 +35,16 @@
     private void ToggleMenu() => menuOpen = !menuOpen;
     private void CloseMenu() => menuOpen = false;
 }
+
+<style>
+    /* Admin link sits at the bottom of the dropdown, subtly styled */
+    .nav-admin-link {
+        opacity: 0.45;
+        font-size: 0.7rem !important;
+        letter-spacing: 1.5px !important;
+    }
+
+        .nav-admin-link:hover {
+            opacity: 1 !important;
+        }
+</style>
