@@ -1,0 +1,1408 @@
+/* ============================================================
+   CHARMONE STRAUSS — PORTFOLIO STYLESHEET
+   ============================================================
+   TABLE OF CONTENTS
+   ---------------------------------------------------------
+   1.  THEME VARIABLES (day + night mode)
+   2.  RESET
+   3.  BODY & BASE
+   4.  NAVBAR
+       4a. Brand / Logo
+       4b. Nav Right (toggle + hamburger)
+       4c. Hamburger button + X animation
+       4d. Dropdown nav links
+   5.  THEME TOGGLE BUTTON
+   6.  BUTTONS (primary + outline)
+   7.  HOME — HERO
+   8.  ABOUT PAGE
+   9.  PORTFOLIO PAGE
+       9a. Page header
+       9b. Filter bar
+       9c. Project grid
+       9d. Project card
+       9e. Featured card
+       9f. Card overlay + info
+       9g. Coming soon state
+   10. MODAL LIGHTBOX
+       10a. Backdrop + panel
+       10b. Media viewer (images + video)
+       10c. Thumbnail strip
+       10d. Modal info panel
+       10e. Tags + chips
+   11. IMAGE ZOOM OVERLAY
+   12. CONTACT PAGE
+   13. FOOTER
+   14. BLAZOR OVERRIDES
+   15. MOBILE — RESPONSIVE (max-width: 768px)
+   ============================================================ */
+
+
+/* ============================================================
+   1. THEME VARIABLES
+   ------------------------------------------------------------
+   DAY MODE  = warm cream palette (default)
+   NIGHT MODE = deep burgundy dark palette
+   To tweak a colour, change it here — it updates everywhere.
+   ============================================================ */
+:root {
+    /* --- Backgrounds --- */
+    --color-bg: #E0D6B8; /* page background */
+    --color-surface: #EDE5D0; /* subtle surface lift */
+    --color-card: #F5F0E8; /* portfolio cards */
+    --color-card-placeholder: #DDD6C0; /* card image placeholder */
+    /* --- Navbar & Footer --- */
+    --color-navbar: #800000;
+    --color-navbar-text: #E0D6B8;
+    --color-footer: #800000;
+    --color-footer-text: #E0D6B8;
+    --color-footer-credit: #B88A2C; /* "Developed by" line */
+    /* --- Typography --- */
+    --color-text-primary: #2a2a2a;
+    --color-text-secondary: #633A2C; /* body copy, subtitles */
+    /* --- Accent / Brand --- */
+    --color-accent: #800000; /* maroon — primary CTA colour */
+    --color-accent-hover: #633A2C; /* darker brown on hover */
+    --color-gold: #B88A2C; /* gold — labels, tags, borders */
+    --color-gold-dark: #B8860B; /* darker gold for featured border */
+    /* --- Borders & Shadows --- */
+    --color-border: rgba(184, 138, 44, 0.2);
+    --color-border-solid: #B88A2C;
+    --color-shadow: rgba(128, 0, 0, 0.12);
+    /* --- Overlays --- */
+    --color-overlay: rgba(128, 0, 0, 0.75); /* card hover overlay */
+    /* --- Modal --- */
+    --color-modal-bg: #E0D6B8;
+    --color-modal-media-bg: #2a2a2a; /* dark panel behind images */
+    --color-modal-nav-bg: #1a1a1a; /* thumbnail strip background */
+    --color-modal-text: #633A2C;
+    --color-modal-close: #800000;
+    --color-modal-close-hover: #633A2C;
+    --color-modal-chip-bg: rgba(128, 0, 0, 0.08);
+    --color-modal-chip-border: rgba(128, 0, 0, 0.2);
+    --color-modal-chip-text: #800000;
+    --color-modal-tags-border: rgba(184, 138, 44, 0.3);
+    /* --- Form Inputs --- */
+    --color-input-bg: transparent;
+    --color-input-text: #2a2a2a;
+    --color-input-border: #B88A2C;
+    --color-input-focus: #800000;
+    /* --- Featured Card --- */
+    --color-featured-bg: #E0D6B8; /* cream bg behind logo */
+    --color-featured-border: #B88A2C;
+    /* --- Nav Dropdown --- */
+    --color-nav-items-bg: #800000;
+    --color-nav-divider: rgba(224, 214, 184, 0.15);
+    /* --- Mobile Modal Close --- */
+    --color-mobile-close-bg: rgba(42, 42, 42, 0.8);
+    --color-mobile-close-text: #E0D6B8;
+}
+
+/* NIGHT MODE overrides — applied when <html data-theme="night"> */
+[data-theme="night"] {
+    /* --- Backgrounds --- */
+    --color-bg: #150A0A;
+    --color-surface: #220E0E;
+    --color-card: #341515;
+    --color-card-placeholder: #3D1A1A;
+    /* --- Navbar & Footer --- */
+    --color-navbar: #1A0808;
+    --color-navbar-text: #F0E6D0;
+    --color-footer: #1A0808;
+    --color-footer-text: #F0E6D0;
+    --color-footer-credit: #D4A030;
+    /* --- Typography --- */
+    --color-text-primary: #F0E6D0;
+    --color-text-secondary: #C8A882;
+    /* --- Accent / Brand --- */
+    --color-accent: #A00000;
+    --color-accent-hover: #C00000; /* lighter on hover in dark mode */
+    --color-gold: #B88A2C;
+    --color-gold-dark: #D4A030;
+    /* --- Borders & Shadows --- */
+    --color-border: rgba(184, 138, 44, 0.15);
+    --color-border-solid: #8A5A2A;
+    --color-shadow: rgba(0, 0, 0, 0.4);
+    /* --- Overlays --- */
+    --color-overlay: rgba(160, 0, 0, 0.8);
+    /* --- Modal --- */
+    --color-modal-bg: #2A1010;
+    --color-modal-media-bg: #0A0404;
+    --color-modal-nav-bg: #0F0606;
+    --color-modal-text: #C8A882;
+    --color-modal-close: #F0E6D0;
+    --color-modal-close-hover: #C8A882;
+    --color-modal-chip-bg: rgba(160, 0, 0, 0.15);
+    --color-modal-chip-border: rgba(160, 0, 0, 0.35);
+    --color-modal-chip-text: #F0A0A0;
+    --color-modal-tags-border: rgba(184, 138, 44, 0.2);
+    /* --- Form Inputs --- */
+    --color-input-bg: transparent;
+    --color-input-text: #F0E6D0;
+    --color-input-border: #8A5A2A;
+    --color-input-focus: #A00000;
+    /* --- Featured Card --- */
+    --color-featured-bg: #2A1010;
+    --color-featured-border: #D4A030;
+    /* --- Nav Dropdown --- */
+    --color-nav-items-bg: #1A0808;
+    --color-nav-divider: rgba(240, 230, 208, 0.1);
+    /* --- Mobile Modal Close --- */
+    --color-mobile-close-bg: rgba(10, 4, 4, 0.9);
+    --color-mobile-close-text: #F0E6D0;
+}
+
+
+/* ============================================================
+   2. RESET
+   ============================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    outline: none;
+}
+
+
+/* ============================================================
+   3. BODY & BASE
+   ============================================================ */
+body {
+    font-family: 'Georgia', serif;
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+}
+
+main {
+    min-height: 100vh;
+}
+
+
+/* ============================================================
+   4. NAVBAR
+   ============================================================ */
+.navbar {
+    background-color: var(--color-navbar);
+    padding: 1.2rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+/* 4a. Brand / Logo
+   ---------------------------------------------------------- */
+.navbar-brand a {
+    color: var(--color-navbar-text);
+    text-decoration: none;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+}
+
+/* 4b. Nav Right — wraps theme toggle + hamburger together
+   margin-left: auto pushes the group to the far right
+   ---------------------------------------------------------- */
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+}
+
+/* 4c. Hamburger — always visible on ALL screen sizes
+   To hide on desktop: add display:none in a min-width query
+   ---------------------------------------------------------- */
+.hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+}
+
+    .hamburger span {
+        display: block;
+        width: 25px;
+        height: 2px;
+        background-color: var(--color-navbar-text);
+        border-radius: 2px;
+        transition: transform 0.3s, opacity 0.3s;
+    }
+
+    /* Animates into an X when .open is applied */
+    .hamburger.open span:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+    }
+
+    .hamburger.open span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger.open span:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
+    }
+
+/* 4d. Dropdown nav links
+   Hidden by default — shown when .open class is toggled.
+   Drops from top-right as an absolute positioned panel.
+   ---------------------------------------------------------- */
+.navbar-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 220px; /* ← change this to adjust dropdown width */
+    flex-direction: column;
+    gap: 0;
+    background-color: var(--color-nav-items-bg);
+    box-shadow: 0 8px 24px var(--color-shadow);
+    z-index: 999;
+}
+
+    .navbar-links.open {
+        display: flex;
+    }
+
+    .navbar-links a {
+        color: var(--color-navbar-text);
+        text-decoration: none;
+        font-size: 0.85rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--color-nav-divider);
+        transition: color 0.3s, background 0.3s;
+    }
+
+        .navbar-links a:hover {
+            color: var(--color-gold);
+            background-color: rgba(255, 255, 255, 0.04);
+        }
+
+
+/* ============================================================
+   5. THEME TOGGLE BUTTON
+   Logic lives in Shared/ThemeToggle.razor
+   Tweak size / border radius here.
+   ============================================================ */
+.theme-toggle {
+    background: transparent;
+    border: 1.5px solid var(--color-navbar-text);
+    color: var(--color-navbar-text);
+    border-radius: 50%;
+    width: 36px; /* ← change to resize the toggle button */
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+}
+
+    .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+.theme-toggle__icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+
+/* ============================================================
+   6. BUTTONS
+   ============================================================ */
+
+/* Solid filled — primary CTA */
+.btn-primary {
+    background-color: var(--color-accent);
+    color: var(--color-navbar-text);
+    padding: 0.9rem 2rem;
+    text-decoration: none;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: background 0.3s;
+    border: none;
+    cursor: pointer;
+}
+
+    .btn-primary:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+/* Ghost outlined — secondary CTA */
+.btn-outline {
+    border: 1px solid var(--color-accent);
+    color: var(--color-accent);
+    padding: 0.9rem 2rem;
+    text-decoration: none;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.3s;
+}
+
+    .btn-outline:hover {
+        background-color: var(--color-accent);
+        color: var(--color-navbar-text);
+    }
+
+
+/* ============================================================
+   7. HOME — HERO
+   ============================================================ */
+.hero {
+    min-height: calc(100vh - 70px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6vw;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--color-bg);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 560px;
+    text-align: left;
+}
+
+.hero-tag {
+    font-size: 0.75rem;
+    letter-spacing: 4px;
+    color: var(--color-gold);
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+}
+
+/* Large display name — change font-size to scale it */
+.hero-title {
+    font-size: 6rem;
+    font-weight: 400;
+    color: var(--color-accent);
+    line-height: 1;
+    margin-bottom: 1.5rem;
+    letter-spacing: -2px;
+}
+
+.hero-sub {
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+    max-width: 400px;
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Hero photo — absolute positioned on the right edge */
+.hero-photo-wrap {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    pointer-events: none;
+}
+
+.hero-photo {
+    height: 95%;
+    width: auto;
+    object-fit: contain;
+    object-position: bottom;
+    opacity: 0.9;
+}
+
+
+/* ============================================================
+   8. ABOUT PAGE
+   ============================================================ */
+.about-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+}
+
+.about-hero {
+    margin-bottom: 4rem;
+}
+
+.about-tag {
+    font-size: 0.75rem;
+    letter-spacing: 4px;
+    color: var(--color-gold);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.about-title {
+    font-size: 5rem;
+    font-weight: 400;
+    color: var(--color-accent);
+    line-height: 1;
+    letter-spacing: -2px;
+}
+
+/* Two-column: label left, content right */
+.about-block {
+    display: grid;
+    grid-template-columns: 200px 1fr; /* ← adjust label column width here */
+    gap: 2rem;
+    padding: 2.5rem 0;
+    align-items: start;
+}
+
+.about-label {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--color-gold);
+    text-transform: uppercase;
+    padding-top: 0.3rem;
+}
+
+.about-text {
+    font-size: 1.05rem;
+    color: var(--color-text-secondary);
+    line-height: 1.9;
+}
+
+/* Thin gold rule between sections */
+.about-divider {
+    height: 1px;
+    background-color: var(--color-gold);
+    opacity: 0.3;
+}
+
+.about-cta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 4rem;
+}
+
+
+/* ============================================================
+   9. PORTFOLIO PAGE
+   ============================================================ */
+.portfolio-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+}
+
+/* 9a. Page header
+   ---------------------------------------------------------- */
+.portfolio-header {
+    padding: 5rem 0 3rem;
+    text-align: center;
+}
+
+.portfolio-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 4px;
+    color: var(--color-gold);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.portfolio-title {
+    font-size: 5rem;
+    font-weight: 400;
+    color: var(--color-accent);
+    line-height: 1;
+    letter-spacing: -2px;
+    margin-bottom: 1.2rem;
+}
+
+.portfolio-subtitle {
+    font-size: 1.05rem;
+    color: var(--color-text-secondary);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.8;
+}
+
+/* 9b. Filter bar
+   ---------------------------------------------------------- */
+.portfolio-filters {
+    margin-bottom: 3rem;
+}
+
+.portfolio-filters-inner {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: transparent;
+    border: 1px solid var(--color-gold);
+    color: var(--color-text-secondary);
+    padding: 0.5rem 1.4rem;
+    font-family: 'Georgia', serif;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+    .filter-btn:hover,
+    .filter-btn.active {
+        background-color: var(--color-accent);
+        border-color: var(--color-accent);
+        color: var(--color-navbar-text);
+    }
+
+/* 9c. Project grid
+   Change repeat(3) to repeat(2) for 2 columns etc.
+   ---------------------------------------------------------- */
+.portfolio-grid-section {
+    width: 100%;
+}
+
+.portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+/* 9d. Project card
+   ---------------------------------------------------------- */
+.project-card {
+    background-color: var(--color-card);
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid var(--color-border);
+}
+
+    .project-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px var(--color-shadow);
+    }
+
+.project-card-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    background-color: var(--color-card-placeholder);
+}
+
+    .project-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s;
+    }
+
+.project-card:hover .project-card-image img {
+    transform: scale(1.04);
+}
+
+/* 9e. Featured card — gold border, taller image, logo display
+   ---------------------------------------------------------- */
+.project-card--featured {
+    border: 2px solid var(--color-featured-border);
+}
+
+    .project-card--featured .project-card-image {
+        height: 320px; /* ← adjust featured image height here */
+        aspect-ratio: unset;
+    }
+
+        .project-card--featured .project-card-image img {
+            object-fit: contain;
+            background-color: var(--color-featured-bg);
+            padding: 30px;
+        }
+
+/* Gold "Featured" badge top-left of image */
+.featured-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: var(--color-gold);
+    color: #fff;
+    font-family: Georgia, serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    z-index: 2;
+}
+
+/* Placeholder shown when card has no image */
+.project-card-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-card-placeholder);
+    gap: 0.5rem;
+}
+
+.placeholder-icon {
+    font-size: 2rem;
+    opacity: 0.4;
+}
+
+/* 9f. Card hover overlay + info section
+   ---------------------------------------------------------- */
+.project-card-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.project-card:hover .project-card-overlay {
+    opacity: 1;
+}
+
+.view-label {
+    color: var(--color-navbar-text);
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.project-card-info {
+    padding: 1.4rem;
+}
+
+.project-tag {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--color-gold);
+}
+
+.project-card-title {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--color-accent);
+    margin: 0.4rem 0 0.6rem;
+    line-height: 1.3;
+}
+
+/* Clamps card description to 3 lines */
+.project-card-desc {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.project-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.project-term {
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    color: var(--color-gold);
+    text-transform: uppercase;
+}
+
+.project-media-icons {
+    display: flex;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+}
+
+/* 9g. Coming soon state — greyed out, non-interactive
+   ---------------------------------------------------------- */
+.project-card.coming-soon {
+    opacity: 0.45;
+    cursor: default;
+    pointer-events: none;
+}
+
+.coming-soon-icon {
+    color: var(--color-gold);
+}
+
+.coming-soon-text {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--color-gold);
+}
+
+
+/* ============================================================
+   10. MODAL LIGHTBOX
+   ============================================================ */
+
+/* 10a. Backdrop + panel
+   ---------------------------------------------------------- */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(42, 42, 42, 0.85);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.modal-panel {
+    background-color: var(--color-modal-bg);
+    width: 100%;
+    max-width: 1000px; /* ← change to resize modal width */
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--color-modal-close);
+    cursor: pointer;
+    z-index: 10;
+    padding: 0.3rem 0.6rem;
+    transition: color 0.2s;
+}
+
+    .modal-close:hover {
+        color: var(--color-modal-close-hover);
+    }
+
+/* Two-column: media left, info right */
+.modal-body {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+}
+
+/* 10b. Media viewer (images + video)
+   ---------------------------------------------------------- */
+.modal-media {
+    background-color: var(--color-modal-media-bg);
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-image-viewer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.modal-main-image {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+}
+
+.modal-main-video {
+    width: 100%;
+    max-height: 480px;
+    background: #000;
+    display: block;
+}
+
+/* Prev / Next navigation bar */
+.modal-image-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.8rem;
+    background-color: var(--color-modal-nav-bg);
+}
+
+.img-nav-btn {
+    background: none;
+    border: 1px solid var(--color-navbar-text);
+    color: var(--color-navbar-text);
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .img-nav-btn:hover:not(:disabled) {
+        background-color: var(--color-accent);
+        border-color: var(--color-accent);
+    }
+
+    .img-nav-btn:disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
+
+.img-counter {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: var(--color-navbar-text);
+}
+
+/* 10c. Thumbnail strip
+   ---------------------------------------------------------- */
+.modal-thumbnails {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.8rem;
+    background-color: var(--color-modal-nav-bg);
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.modal-thumb-wrap {
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+    .modal-thumb-wrap.active {
+        border-color: var(--color-gold);
+    }
+
+    .modal-thumb-wrap:hover {
+        border-color: rgba(184, 138, 44, 0.5);
+    }
+
+.modal-thumb {
+    width: 60px;
+    height: 45px;
+    object-fit: cover;
+    display: block;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.modal-thumb-wrap.active .modal-thumb,
+.modal-thumb-wrap:hover .modal-thumb {
+    opacity: 1;
+}
+
+/* Video thumbnail — shows play icon instead of image */
+.modal-thumb--video {
+    width: 60px;
+    height: 45px;
+    background: var(--color-modal-nav-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+/* Empty state when no media exists */
+.modal-no-media {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    gap: 0.5rem;
+    font-size: 2rem;
+}
+
+    .modal-no-media p {
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+/* 10d. Modal info panel (right side)
+   ---------------------------------------------------------- */
+.modal-info {
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    overflow-y: auto;
+}
+
+.modal-tag {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--color-gold);
+}
+
+.modal-title {
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: var(--color-accent);
+    line-height: 1.2;
+}
+
+.modal-term {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--color-gold);
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--color-modal-tags-border);
+}
+
+.modal-description {
+    font-size: 0.9rem;
+    color: var(--color-modal-text);
+    line-height: 1.85;
+}
+
+/* PDF download button inside modal */
+.modal-pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--color-accent);
+    color: var(--color-navbar-text);
+    padding: 0.7rem 1.4rem;
+    text-decoration: none;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: background 0.3s;
+    margin-top: 0.5rem;
+    width: fit-content;
+}
+
+    .modal-pdf-btn:hover {
+        background-color: var(--color-accent-hover);
+    }
+
+/* 10e. Tags + chips at bottom of info panel
+   ---------------------------------------------------------- */
+.modal-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-modal-tags-border);
+}
+
+.modal-chip {
+    background-color: var(--color-modal-chip-bg);
+    border: 1px solid var(--color-modal-chip-border);
+    color: var(--color-modal-chip-text);
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+}
+
+
+/* ============================================================
+   11. IMAGE ZOOM OVERLAY
+   Full-screen lightbox when clicking a modal image.
+   ============================================================ */
+.zoom-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.92);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+    padding: 1rem;
+}
+
+    .zoom-overlay img {
+        max-width: 95vw;
+        max-height: 95vh;
+        object-fit: contain;
+        display: block;
+    }
+
+.zoom-close {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: 1px solid var(--color-navbar-text);
+    color: var(--color-navbar-text);
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+    .zoom-close:hover {
+        background-color: var(--color-accent);
+        border-color: var(--color-accent);
+    }
+
+
+/* ============================================================
+   12. CONTACT PAGE
+   ============================================================ */
+.contact-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+}
+
+.contact-hero {
+    margin-bottom: 4rem;
+}
+
+/* Two-column: info left, form right */
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 4rem;
+}
+
+.contact-block {
+    padding: 1.5rem 0;
+}
+
+.contact-info {
+    font-size: 1rem;
+    color: var(--color-text-secondary);
+    margin-top: 0.5rem;
+    line-height: 1.8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.contact-form-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--color-gold);
+    text-transform: uppercase;
+}
+
+/* Underline-only input — no box border */
+.form-input {
+    background: var(--color-input-bg);
+    border: none;
+    border-bottom: 1px solid var(--color-input-border);
+    padding: 0.6rem 0;
+    font-family: 'Georgia', serif;
+    font-size: 1rem;
+    color: var(--color-input-text);
+    width: 100%;
+}
+
+    .form-input:focus {
+        border-bottom: 1px solid var(--color-input-focus);
+    }
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-status {
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+}
+
+.status-success {
+    color: #2a7a2a;
+}
+
+.status-error {
+    color: var(--color-accent);
+}
+
+
+/* ============================================================
+   13. FOOTER
+   ============================================================ */
+.footer {
+    background-color: var(--color-footer);
+    color: var(--color-footer-text);
+    padding: 1.5rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+.footer-left {
+    color: var(--color-footer-text);
+}
+
+/* "Developed by Victor" — gold accent */
+.footer-right {
+    color: var(--color-footer-credit);
+}
+
+
+/* ============================================================
+   14. BLAZOR OVERRIDES
+   Hides default Blazor loading bar and error UI.
+   ============================================================ */
+#blazor-error-ui {
+    display: none !important;
+}
+
+.loading-progress,
+.loading-progress-text {
+    display: none;
+}
+
+
+/* ============================================================
+   15. MOBILE — RESPONSIVE
+   Breakpoint: 768px and below
+   ============================================================ */
+@media (max-width: 768px) {
+
+    /* Navbar */
+    .navbar {
+        padding: 1rem 1.5rem;
+    }
+
+    .navbar-brand a {
+        font-size: 1.1rem;
+    }
+
+    /* Dropdown goes full width on mobile */
+    .navbar-links {
+        width: 100%;
+    }
+
+    /* Hero */
+    .hero {
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 2rem 1.5rem;
+        min-height: calc(100vh - 60px);
+    }
+
+    .hero-content {
+        text-align: center;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        z-index: 2;
+        width: 100%;
+    }
+
+    .hero-photo-wrap {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 60%;
+        width: 100%;
+        justify-content: center;
+        opacity: 0.25;
+    }
+
+    .hero-photo {
+        height: 100%;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        letter-spacing: -1px;
+    }
+
+    .hero-tag {
+        font-size: 0.65rem;
+        letter-spacing: 2px;
+    }
+
+    .hero-sub {
+        font-size: 1rem;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-primary,
+    .btn-outline {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    /* About */
+    .about-title {
+        font-size: 3rem;
+        letter-spacing: -1px;
+    }
+
+    .about-block {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 2rem 0;
+    }
+
+    .about-cta {
+        flex-direction: column;
+    }
+
+    /* Contact */
+    .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    /* Footer */
+    .footer {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+        padding: 1.5rem;
+    }
+
+    /* Portfolio */
+    .portfolio-title {
+        font-size: 3rem;
+        letter-spacing: -1px;
+    }
+
+    .portfolio-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .project-card--featured .project-card-image {
+        height: 220px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal-panel {
+        max-height: 95vh;
+        max-width: 100%;
+        width: 100%;
+        border-radius: 0;
+    }
+
+    .modal-body {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+    }
+
+    .modal-media {
+        min-height: 280px;
+    }
+
+    .modal-main-image {
+        aspect-ratio: 16/9;
+    }
+
+    .modal-thumbnails {
+        max-height: 70px;
+    }
+
+    .modal-thumb,
+    .modal-thumb--video {
+        width: 50px;
+        height: 38px;
+    }
+
+    .modal-thumb--video {
+        font-size: 1rem;
+    }
+
+    .modal-info {
+        padding: 1.5rem;
+        max-height: none;
+    }
+
+    .modal-title {
+        font-size: 1.3rem;
+    }
+
+    .modal-description {
+        font-size: 0.85rem;
+    }
+
+    /* Mobile modal close — circular, fixed top-right */
+    .modal-close {
+        position: fixed;
+        top: 0.5rem;
+        right: 0.5rem;
+        background-color: var(--color-mobile-close-bg);
+        color: var(--color-mobile-close-text);
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+.upload-remove-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-accent);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 0 0.3rem;
+    line-height: 1;
+    transition: opacity 0.2s;
+    margin-left: auto;
+}
+
+    .upload-remove-btn:hover {
+        opacity: 0.7;
+    }
