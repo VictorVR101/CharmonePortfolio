@@ -1,5 +1,6 @@
 ﻿@page "/admin/dashboard"
 @using CharmonePortfolio.Services
+@using Microsoft.AspNetCore.Components.Forms
 @inject SupabaseService Supabase
 @inject NavigationManager Nav
 
@@ -81,23 +82,58 @@
 
                 <!-- Folder -->
                 <div class="form-group">
-                    <label class="form-label">Folder path</label>
-                    <input class="form-input" @bind="Form.Folder" placeholder="portfolio/ds-p1/" />
+                    <label class="form-label">Folder name</label>
+                    <input class="form-input" @bind="FolderName"
+                           placeholder="e.g. ds-p1-t2" />
+                    <p class="admin-hint">Short name only — e.g. <strong>ds-p1-t2</strong>. Files will be stored under <strong>portfolio/{folder}/</strong></p>
                 </div>
 
-                <!-- Thumbnail -->
+                <!-- Images upload -->
                 <div class="form-group admin-full">
-                    <label class="form-label">Thumbnail filename</label>
-                    <input class="form-input" @bind="Form.Thumbnail" placeholder="thumb.jpg" />
+                    <label class="form-label">Images</label>
+                    <InputFile OnChange="OnImagesSelected" multiple accept="image/*"
+                               style="display:none" id="imageFilePicker" />
+                    <button type="button" class="btn-upload" onclick="document.getElementById('imageFilePicker').click()">
+                        📁 Browse Images
+                    </button>
+                    @if (SelectedImages.Count > 0)
+                    {
+                        <div class="upload-file-list">
+                            @foreach (var f in SelectedImages)
+                            {
+                                <div class="upload-file-item @(f == SelectedImages[0] ? "upload-file-thumb" : "")">
+                                    <span class="upload-file-icon">🖼</span>
+                                    <span class="upload-file-name">@f.Name</span>
+                                    <span class="upload-file-size">@FormatSize(f.Size)</span>
+                                    @if (f == SelectedImages[0])
+                                    {
+                                        <span class="upload-badge">thumbnail</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <p class="admin-hint">@SelectedImages.Count image(s) selected. First image will be used as thumbnail.</p>
+                    }
                 </div>
 
-                <!-- Images -->
+                <!-- PDF upload -->
                 <div class="form-group admin-full">
-                    <label class="form-label">Image filenames (one per line)</label>
-                    <textarea class="form-input form-textarea"
-                              @bind="ImagesText"
-                              placeholder="image-1.jpg&#10;image-2.jpg&#10;image-3.jpg"></textarea>
-                    <p class="admin-hint">One filename per line. They will be prefixed with the folder path automatically.</p>
+                    <label class="form-label">PDF (optional)</label>
+                    <InputFile OnChange="OnPdfSelected" accept=".pdf"
+                               style="display:none" id="pdfFilePicker" />
+                    <button type="button" class="btn-upload" onclick="document.getElementById('pdfFilePicker').click()">
+                        📄 Browse PDF
+                    </button>
+                    @if (SelectedPdf != null)
+                    {
+                        <div class="upload-file-list">
+                            <div class="upload-file-item">
+                                <span class="upload-file-icon">📄</span>
+                                <span class="upload-file-name">@SelectedPdf.Name</span>
+                                <span class="upload-file-size">@FormatSize(SelectedPdf.Size)</span>
+                            </div>
+                        </div>
+                    }
                 </div>
 
                 <!-- Videos -->
@@ -107,12 +143,6 @@
                               style="min-height:80px"
                               @bind="VideosText"
                               placeholder="animation-1.mp4&#10;animation-2.mp4"></textarea>
-                </div>
-
-                <!-- PDF -->
-                <div class="form-group admin-full">
-                    <label class="form-label">PDF filename (optional)</label>
-                    <input class="form-input" @bind="Form.PdfUrl" placeholder="submission.pdf" />
                 </div>
 
                 <!-- Tags -->
@@ -143,10 +173,19 @@
 
             </div>
 
+            <!-- Upload progress -->
+            @if (IsUploading)
+            {
+                <div class="upload-progress">
+                    <div class="upload-progress-bar" style="width:@(UploadProgress)%"></div>
+                </div>
+                <p class="admin-hint" style="text-align:center;margin-top:0.5rem;">@UploadStatus</p>
+            }
+
             <!-- Form actions -->
             <div class="admin-form-actions">
-                <button class="btn-primary" @onclick="SaveProjectAsync" disabled="@IsSaving">
-                    @(IsSaving ? "Saving..." : (EditingProject?.Id == null ? "Add Project" : "Save Changes"))
+                <button class="btn-primary" @onclick="SaveProjectAsync" disabled="@(IsSaving || IsUploading)">
+                    @(IsSaving ? "Saving..." : IsUploading ? "Uploading..." : (EditingProject?.Id == null ? "Add Project" : "Save Changes"))
                 </button>
                 <button class="btn-outline" @onclick="CancelForm">Cancel</button>
             </div>
@@ -206,16 +245,23 @@
     private List<Project> Projects = new();
     private bool IsLoading = true;
     private bool IsSaving = false;
+    private bool IsUploading = false;
     private bool ShowForm = false;
     private string StatusMessage = "";
     private bool StatusIsError = false;
+    private int UploadProgress = 0;
+    private string UploadStatus = "";
 
     // Form state
     private Project Form = new();
     private Project? EditingProject;
-    private string ImagesText = "";
+    private string FolderName = "";
     private string VideosText = "";
     private string TagsText = "";
+
+    // File picker state
+    private List<IBrowserFile> SelectedImages = new();
+    private IBrowserFile? SelectedPdf = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -232,10 +278,12 @@
     private void ShowAddForm()
     {
         Form = new Project();
-        EditingProject = new Project(); // no Id = new
-        ImagesText = "";
+        EditingProject = new Project();
+        FolderName = "";
         VideosText = "";
         TagsText = "";
+        SelectedImages = new();
+        SelectedPdf = null;
         ShowForm = true;
         StatusMessage = "";
     }
@@ -260,9 +308,12 @@
             Featured = p.Featured,
             SortOrder = p.SortOrder
         };
-        ImagesText = string.Join("\n", p.Images);
+        // Strip the folder prefix for display in the text box
+        FolderName = p.Folder.Replace("portfolio/", "").Trim('/');
         VideosText = string.Join("\n", p.VideoUrls);
         TagsText = string.Join(", ", p.Tags);
+        SelectedImages = new();
+        SelectedPdf = null;
         ShowForm = true;
         StatusMessage = "";
     }
@@ -273,6 +324,16 @@
         EditingProject = null;
     }
 
+    private void OnImagesSelected(InputFileChangeEventArgs e)
+    {
+        SelectedImages = e.GetMultipleFiles(50).ToList();
+    }
+
+    private void OnPdfSelected(InputFileChangeEventArgs e)
+    {
+        SelectedPdf = e.File;
+    }
+
     private async Task SaveProjectAsync()
     {
         if (string.IsNullOrWhiteSpace(Form.Title))
@@ -281,15 +342,80 @@
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(FolderName))
+        {
+            SetStatus("Folder name is required.", true);
+            return;
+        }
+
         IsSaving = true;
 
-        // Parse text areas into lists
-        Form.Images = ImagesText
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Select(s => s.Trim())
-            .Where(s => !string.IsNullOrEmpty(s))
-            .ToList();
+        // Build folder path
+        var folder = FolderName.Trim('/').ToLower();
+        Form.Folder = $"portfolio/{folder}";
 
+        // Upload images if any selected
+        if (SelectedImages.Count > 0)
+        {
+            IsUploading = true;
+            var uploadedNames = new List<string>();
+
+            for (int i = 0; i < SelectedImages.Count; i++)
+            {
+                var file = SelectedImages[i];
+                UploadStatus = $"Uploading {file.Name} ({i + 1}/{SelectedImages.Count})...";
+                UploadProgress = (int)((i / (double)SelectedImages.Count) * 100);
+                StateHasChanged();
+
+                var bytes = await ReadFileAsync(file);
+                var contentType = file.ContentType ?? "image/jpeg";
+                var result = await Supabase.UploadFileAsync(folder, file.Name, bytes, contentType);
+
+                if (result.Success)
+                {
+                    uploadedNames.Add(file.Name);
+                }
+                else
+                {
+                    SetStatus($"Failed to upload {file.Name}: {result.Error}", true);
+                    IsSaving = false;
+                    IsUploading = false;
+                    return;
+                }
+            }
+
+            Form.Images = uploadedNames;
+            Form.Thumbnail = uploadedNames[0]; // first image = thumbnail
+            UploadProgress = 100;
+            IsUploading = false;
+        }
+
+        // Upload PDF if selected
+        if (SelectedPdf != null)
+        {
+            IsUploading = true;
+            UploadStatus = $"Uploading {SelectedPdf.Name}...";
+            StateHasChanged();
+
+            var bytes = await ReadFileAsync(SelectedPdf);
+            var result = await Supabase.UploadFileAsync(folder, SelectedPdf.Name, bytes, "application/pdf");
+
+            if (result.Success)
+            {
+                Form.PdfUrl = SelectedPdf.Name;
+            }
+            else
+            {
+                SetStatus($"Failed to upload PDF: {result.Error}", true);
+                IsSaving = false;
+                IsUploading = false;
+                return;
+            }
+
+            IsUploading = false;
+        }
+
+        // Parse videos and tags
         Form.VideoUrls = VideosText
             .Split('\n', StringSplitOptions.RemoveEmptyEntries)
             .Select(s => s.Trim())
@@ -303,7 +429,6 @@
             .ToList();
 
         bool success;
-
         if (string.IsNullOrEmpty(Form.Id))
             success = await Supabase.CreateProjectAsync(Form);
         else
@@ -311,13 +436,13 @@
 
         if (success)
         {
-            SetStatus(Form.Id == null ? "Project added!" : "Project updated!", false);
+            SetStatus(string.IsNullOrEmpty(Form.Id) ? "Project added!" : "Project updated!", false);
             ShowForm = false;
             await LoadProjectsAsync();
         }
         else
         {
-            SetStatus("Something went wrong. Please try again.", true);
+            SetStatus("Something went wrong saving the project.", true);
         }
 
         IsSaving = false;
@@ -337,6 +462,22 @@
         {
             SetStatus("Could not delete project.", true);
         }
+    }
+
+    private static async Task<byte[]> ReadFileAsync(IBrowserFile file)
+    {
+        // Max 50MB per Supabase free tier limit
+        using var stream = file.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024);
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        return ms.ToArray();
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024} KB";
+        return $"{bytes / (1024 * 1024.0):F1} MB";
     }
 
     private void SetStatus(string msg, bool isError)
@@ -450,6 +591,82 @@
         margin-top: 1.5rem;
         padding-top: 1.5rem;
         border-top: 1px solid var(--color-border);
+    }
+
+    /* ── Upload button & file list ── */
+    .btn-upload {
+        background: transparent;
+        border: 1px solid var(--color-gold);
+        color: var(--color-gold);
+        padding: 0.5rem 1.2rem;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        font-family: Georgia, serif;
+        transition: all 0.2s;
+        margin-bottom: 0.75rem;
+    }
+
+        .btn-upload:hover {
+            background-color: var(--color-gold);
+            color: #fff;
+        }
+
+    .upload-file-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+    }
+
+    .upload-file-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.82rem;
+        color: var(--color-text-secondary);
+        padding: 0.4rem 0.6rem;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+    }
+
+    .upload-file-thumb {
+        border-color: var(--color-gold);
+    }
+
+    .upload-file-name {
+        flex: 1;
+        color: var(--color-text-primary);
+        font-size: 0.85rem;
+    }
+
+    .upload-file-size {
+        color: var(--color-text-secondary);
+        font-size: 0.75rem;
+    }
+
+    .upload-badge {
+        font-size: 0.65rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--color-gold);
+        border: 1px solid var(--color-gold);
+        padding: 0.1rem 0.4rem;
+    }
+
+    /* ── Upload progress bar ── */
+    .upload-progress {
+        height: 3px;
+        background: var(--color-border);
+        margin-top: 1rem;
+        overflow: hidden;
+    }
+
+    .upload-progress-bar {
+        height: 100%;
+        background: var(--color-gold);
+        transition: width 0.3s ease;
     }
 
     /* ── Table ── */

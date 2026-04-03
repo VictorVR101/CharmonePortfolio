@@ -69,15 +69,26 @@ namespace CharmonePortfolio.Services
     }
 
     // ─────────────────────────────────────────────
+    // Upload result
+    // ─────────────────────────────────────────────
+    public class UploadResult
+    {
+        public bool Success { get; set; }
+        public string? PublicUrl { get; set; }
+        public string? FileName { get; set; }
+        public string? Error { get; set; }
+    }
+
+    // ─────────────────────────────────────────────
     // Main Supabase service
     // ─────────────────────────────────────────────
     public class SupabaseService
     {
         private readonly HttpClient _http;
 
-        // ← Your Supabase credentials
         private const string Url = "https://kvpnalsxfbiktmovvjkj.supabase.co";
-        private const string AnonKey = "sb_publishable_KDSEQtXD_GoMpZlmIjZshQ_JxTbrJq9";
+        private const string AnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2cG5hbHN4ZmJpa3Rtb3Z2amtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNDg0NzAsImV4cCI6MjA5MDcyNDQ3MH0.gWcKx4iVDU1Wkjy8LUQbUM1C6-OhLsFWBSyBQp9MWDQ";
+        private const string Bucket = "portfolio";
 
         private string? _accessToken;
         public bool IsAuthenticated => !string.IsNullOrEmpty(_accessToken);
@@ -165,6 +176,65 @@ namespace CharmonePortfolio.Services
 
             var response = await _http.SendAsync(request);
             return response.IsSuccessStatusCode;
+        }
+
+        // ─── Upload a file to Supabase Storage ───
+        public async Task<UploadResult> UploadFileAsync(string folder, string fileName, byte[] fileBytes, string contentType)
+        {
+            // Sanitise folder name — strip any leading/trailing slashes
+            folder = folder.Trim('/');
+            var storagePath = $"{folder}/{fileName}";
+
+            var request = new HttpRequestMessage(HttpMethod.Post,
+                $"{Url}/storage/v1/object/{Bucket}/{storagePath}");
+            request.Headers.Add("apikey", AnonKey);
+            request.Headers.Add("Authorization", $"Bearer {_accessToken}");
+
+            request.Content = new ByteArrayContent(fileBytes);
+            request.Content.Headers.ContentType =
+                new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+
+            var response = await _http.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = await response.Content.ReadAsStringAsync();
+                return new UploadResult { Success = false, Error = err };
+            }
+
+            var publicUrl = $"{Url}/storage/v1/object/public/{Bucket}/{storagePath}";
+            return new UploadResult
+            {
+                Success = true,
+                PublicUrl = publicUrl,
+                FileName = fileName
+            };
+        }
+
+        // ─── Delete a file from Supabase Storage ─
+        public async Task<bool> DeleteFileAsync(string folder, string fileName)
+        {
+            folder = folder.Trim('/');
+            var storagePath = $"{folder}/{fileName}";
+
+            var payload = new { prefixes = new[] { storagePath } };
+            var request = new HttpRequestMessage(HttpMethod.Delete,
+                $"{Url}/storage/v1/object/{Bucket}");
+            request.Headers.Add("apikey", AnonKey);
+            request.Headers.Add("Authorization", $"Bearer {_accessToken}");
+            request.Content = new StringContent(
+                JsonSerializer.Serialize(payload),
+                Encoding.UTF8, "application/json");
+
+            var response = await _http.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+
+        // ─── Get public URL for a stored file ────
+        public string GetPublicUrl(string folder, string fileName)
+        {
+            folder = folder.Trim('/');
+            return $"{Url}/storage/v1/object/public/{Bucket}/{folder}/{fileName}";
         }
     }
 }
